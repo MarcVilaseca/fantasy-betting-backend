@@ -2,6 +2,7 @@
   - type: web
     name: fantasy-betting-backend
     env: node
+    plan: free
     buildCommand: npm install
     startCommand: node server.js
     envVars:
