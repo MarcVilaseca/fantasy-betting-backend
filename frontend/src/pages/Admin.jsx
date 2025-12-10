@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { matches as matchesApi, users as usersApi } from '../utils/api';
 
 function Admin() {
@@ -61,8 +61,8 @@ function Admin() {
 
   const handleSetResult = async (matchId) => {
     const match = matches.find(m => m.id === matchId);
-    const score1 = prompt(`Puntuació de ${match.team1}:`);
-    const score2 = prompt(`Puntuació de ${match.team2}:`);
+    const score1 = prompt(`PuntuaciÃ³ de ${match.team1}:`);
+    const score2 = prompt(`PuntuaciÃ³ de ${match.team2}:`);
 
     if (score1 === null || score2 === null) return;
 
@@ -70,7 +70,7 @@ function Admin() {
     const s2 = parseInt(score2);
 
     if (isNaN(s1) || isNaN(s2)) {
-      alert('Puntuacions invàlides');
+      alert('Puntuacions invÃ lides');
       return;
     }
 
@@ -92,7 +92,7 @@ function Admin() {
 
     const coins = parseFloat(newCoins);
     if (isNaN(coins) || coins < 0) {
-      alert('Quantitat invàlida');
+      alert('Quantitat invÃ lida');
       return;
     }
 
@@ -139,7 +139,7 @@ function Admin() {
   return (
     <div>
       <div className="card">
-        <div className="card-header">Panell d'Administració</div>
+        <div className="card-header">Panell d'AdministraciÃ³</div>
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--border)' }}>
@@ -173,7 +173,7 @@ function Admin() {
           </button>
         </div>
 
-        {/* Gestió de partits */}
+        {/* GestiÃ³ de partits */}
         {activeTab === 'matches' && (
           <div>
             {/* Crear nou partit */}
@@ -308,7 +308,7 @@ function Admin() {
           </div>
         )}
 
-        {/* Gestió d'usuaris */}
+        {/* GestiÃ³ d'usuaris */}
         {activeTab === 'users' && (
           <div>
             <h3 style={{ marginBottom: '1rem' }}>Usuaris</h3>
@@ -335,7 +335,7 @@ function Admin() {
                     )}
                   </div>
                   <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    Monedes: <strong>{user.coins.toFixed(2)}</strong>
+                    Monedes: <strong>{Number(user.coins).toFixed(2)}</strong>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                     Registrat: {formatDate(user.created_at)}
@@ -357,3 +357,4 @@ function Admin() {
 }
 
 export default Admin;
+

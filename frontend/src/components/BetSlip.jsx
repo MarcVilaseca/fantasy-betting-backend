@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 
 function BetSlip({ selectedBets, onPlaceBet, onClear, userCoins }) {
   const [amount, setAmount] = useState('');
@@ -18,7 +18,7 @@ function BetSlip({ selectedBets, onPlaceBet, onClear, userCoins }) {
     const betAmount = parseFloat(amount);
 
     if (!betAmount || betAmount <= 0) {
-      alert('Introdueix una quantitat vàlida');
+      alert('Introdueix una quantitat vÃ lida');
       return;
     }
 
@@ -53,7 +53,7 @@ function BetSlip({ selectedBets, onPlaceBet, onClear, userCoins }) {
       onClear();
       newBets.forEach(bet => {
         // Re-seleccionar les apostes que no s'han eliminat
-        // Això requereix cridar onSelectBet del pare, però no tenim accés
+        // AixÃ² requereix cridar onSelectBet del pare, perÃ² no tenim accÃ©s
         // Alternativa: gestionar-ho al component pare
       });
     }
@@ -83,7 +83,7 @@ function BetSlip({ selectedBets, onPlaceBet, onClear, userCoins }) {
 
       {selectedBets.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center', padding: '2rem 0' }}>
-          Selecciona apostes per començar
+          Selecciona apostes per comenÃ§ar
         </p>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -195,3 +195,5 @@ function BetSlip({ selectedBets, onPlaceBet, onClear, userCoins }) {
 }
 
 export default BetSlip;
+
+
