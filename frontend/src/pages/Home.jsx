@@ -19,7 +19,7 @@ function Home() {
     try {
       setLoading(true);
       const response = await matchesApi.getOpen();
-      setMatches(response.data);
+      setMatches(response || []);
       setError('');
     } catch (err) {
       setError('Error en carregar els partits');

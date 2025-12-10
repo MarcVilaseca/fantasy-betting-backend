@@ -15,7 +15,7 @@ function FantasyClassification() {
     try {
       setLoading(true);
       const response = await fantasyApi.getClassification();
-      setClassification(response.data);
+      setClassification(response || []);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.error || err.message);

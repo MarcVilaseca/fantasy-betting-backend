@@ -28,8 +28,8 @@ function Admin() {
         matchesApi.getAll(),
         usersApi.getAll()
       ]);
-      setMatches(matchesRes.data);
-      setUsers(usersRes.data);
+      setMatches(matchesRes || []);
+      setUsers(usersRes || []);
     } catch (err) {
       console.error('Error en carregar dades:', err);
       alert('Error en carregar dades');
@@ -41,7 +41,7 @@ function Admin() {
   const loadTeams = async () => {
     try {
       const response = await matchesApi.getTeams();
-      setTeams(response.data);
+      setTeams(response || []);
     } catch (err) {
       console.error('Error en carregar equips:', err);
     }

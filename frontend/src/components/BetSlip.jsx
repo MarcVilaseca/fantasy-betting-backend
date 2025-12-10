@@ -83,7 +83,7 @@ function BetSlip({ selectedBets, onPlaceBet, onClear, userCoins }) {
 
       {selectedBets.length === 0 ? (
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center', padding: '2rem 0' }}>
-          Selecciona apostes per comenÃ§ar
+          Selecciona apostes per començar
         </p>
       ) : (
         <form onSubmit={handleSubmit}>

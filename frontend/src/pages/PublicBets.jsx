@@ -15,7 +15,7 @@ function PublicBets() {
     try {
       setLoading(true);
       const response = await betsApi.getPublic();
-      setBets(response.data);
+      setBets(response || []);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.error || err.message);

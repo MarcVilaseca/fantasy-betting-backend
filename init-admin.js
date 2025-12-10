@@ -18,11 +18,15 @@ async function createAdminUser() {
 
     // Crear admin
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    await userQueries.create(adminUsername, hashedPassword, 1); // 1 = is_admin
+    const result = await userQueries.create(adminUsername, hashedPassword, 1); // 1 = is_admin
+
+    // Establir monedes a 0 per l'admin
+    await userQueries.updateCoins(0, result.lastInsertRowid);
 
     console.log('✅ Usuari admin creat correctament!');
     console.log(`   Username: ${adminUsername}`);
     console.log(`   Password: ${adminPassword}`);
+    console.log(`   Monedes: 0`);
     console.log('');
     console.log('⚠️  IMPORTANT: Canvia la contrasenya després del primer login!');
   } catch (error) {

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { users as usersApi } from '../utils/api';
 
 function Leaderboard() {
@@ -13,9 +13,9 @@ function Leaderboard() {
     try {
       setLoading(true);
       const response = await usersApi.getLeaderboard();
-      setLeaderboard(response.data);
+      setLeaderboard(response || []);
     } catch (err) {
-      console.error('Error en carregar rÃ nking:', err);
+      console.error('Error en carregar rànking:', err);
     } finally {
       setLoading(false);
     }
@@ -23,9 +23,9 @@ function Leaderboard() {
 
   const getRankEmoji = (index) => {
     switch (index) {
-      case 0: return 'ðŸ¥‡';
-      case 1: return 'ðŸ¥ˆ';
-      case 2: return 'ðŸ¥‰';
+      case 0: return '🥇';
+      case 1: return '🥈';
+      case 2: return '🥉';
       default: return '';
     }
   };
@@ -41,11 +41,11 @@ function Leaderboard() {
   return (
     <div>
       <div className="card">
-        <div className="card-header">RÃ nking de Jugadors</div>
+        <div className="card-header">Rànking de Jugadors</div>
 
         <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--light)', borderRadius: '8px' }}>
           <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-            <strong>Objectiu:</strong> Aconseguir 10.000 monedes per convertir-les en 10.000.000â‚¬ de pressupost fantasy!
+            <strong>Objectiu:</strong> Aconseguir 10.000 monedes per convertir-les en 10.000.000€ de pressupost fantasy!
           </div>
         </div>
 
@@ -74,7 +74,7 @@ function Leaderboard() {
               {user.canCashOut && (
                 <div style={{ marginLeft: '1rem' }}>
                   <div className="badge badge-warning">
-                    {Math.floor(user.coins / 10000)} x 10Mâ‚¬
+                    {Math.floor(user.coins / 10000)} x 10M€
                   </div>
                 </div>
               )}
@@ -93,13 +93,13 @@ function Leaderboard() {
         <div className="card-header">Com funciona?</div>
         <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.8' }}>
-            <li>Cada jugador comenÃ§a amb 1.000 monedes</li>
+            <li>Cada jugador comença amb 1.000 monedes</li>
             <li>Pots apostar en els duels d'altres jugadors de la liga</li>
-            <li>Hi ha diferents tipus d'apostes: guanyador, marge de victÃ²ria, over/under</li>
+            <li>Hi ha diferents tipus d'apostes: guanyador, marge de victòria, over/under</li>
             <li>Pots fer apostes combinades (2-4 apostes) per multiplicar les cuotes</li>
             <li>Les apostes es tanquen els divendres a les 20:59</li>
             <li>Els resultats es resolen els dimarts a la nit</li>
-            <li><strong>Quan aconsegueixis 10.000 monedes, podrÃ s convertir-les en 10.000.000â‚¬ de pressupost fantasy!</strong></li>
+            <li><strong>Quan aconsegueixis 10.000 monedes, podràs convertir-les en 10.000.000€ de pressupost fantasy!</strong></li>
           </ul>
         </div>
       </div>
@@ -108,4 +108,3 @@ function Leaderboard() {
 }
 
 export default Leaderboard;
-

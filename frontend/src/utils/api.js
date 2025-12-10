@@ -7,6 +7,17 @@ const api = axios.create({
     baseURL: API_URL,
 });
 
+// Afegir token a totes les peticions
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
 // 1. APOSTES
 export const bets = {
     getAll: async () => {
@@ -18,8 +29,30 @@ export const bets = {
             return [];
         }
     },
+    getPublic: async () => {
+        try {
+            const response = await api.get('/bets/public');
+            return response.data;
+        } catch (error) {
+            console.error("Error public bets:", error);
+            return [];
+        }
+    },
+    getMyBets: async () => {
+        try {
+            const response = await api.get('/bets/my');
+            return response.data;
+        } catch (error) {
+            console.error("Error my bets:", error);
+            return [];
+        }
+    },
     create: async (data) => {
         const response = await api.post('/bets', data);
+        return response.data;
+    },
+    createParlay: async (data) => {
+        const response = await api.post('/bets/parlay', data);
         return response.data;
     },
     delete: async (id) => {
@@ -39,6 +72,15 @@ export const matches = {
             return [];
         }
     },
+    getOpen: async () => {
+        try {
+            const response = await api.get('/matches/open');
+            return response.data;
+        } catch (error) {
+            console.error("Error open matches:", error);
+            return [];
+        }
+    },
     create: async (data) => {
         const response = await api.post('/matches', data);
         return response.data;
@@ -46,6 +88,22 @@ export const matches = {
     delete: async (id) => {
         await api.delete(`/matches/${id}`);
         return id;
+    },
+    getTeams: async () => {
+        try {
+            const response = await api.get('/matches/teams');
+            return response.data;
+        } catch (error) {
+            console.error("Error teams:", error);
+            return [];
+        }
+    },
+    setResult: async (matchId, scoreTeam1, scoreTeam2) => {
+        const response = await api.put(`/matches/${matchId}/result`, {
+            score_team1: scoreTeam1,
+            score_team2: scoreTeam2
+        });
+        return response.data;
     }
 };
 
@@ -60,6 +118,15 @@ export const users = {
             return [];
         }
     },
+    getLeaderboard: async () => {
+        try {
+            const response = await api.get('/users/leaderboard');
+            return response.data;
+        } catch (error) {
+            console.error("Error leaderboard:", error);
+            return [];
+        }
+    },
     getProfile: async () => {
         try {
             const response = await api.get('/users/profile');
@@ -67,6 +134,13 @@ export const users = {
         } catch (error) {
             return null;
         }
+    },
+    updateCoins: async (userId, coins, reason) => {
+        const response = await api.put(`/users/${userId}/coins`, {
+            coins,
+            reason
+        });
+        return response.data;
     }
 };
 
