@@ -116,16 +116,22 @@ Per actualitzar l'aplicació:
 
 ```
 fantasy-betting/
-├── server.js              # Backend + serveix frontend
-├── config/               # Configuració BD
-├── routes/               # API routes
-├── middleware/           # Auth middleware
-├── frontend/             # Frontend React
-│   ├── src/             # Codi font React
-│   └── dist/            # Build (generat automàticament)
-├── scripts/             # Scripts d'inicialització (NO es pugen a git)
-├── render.yaml          # Configuració Render
-└── package.json         # Dependencies + scripts
+├── server/              # Backend
+│   ├── index.js        # Server principal
+│   ├── routes/         # API routes
+│   ├── config/         # Configuració BD
+│   ├── utils/          # Utilities
+│   └── data/           # Data files
+├── src/                # Frontend React
+│   ├── components/     # React components
+│   ├── pages/          # React pages
+│   └── utils/          # Frontend utilities
+├── dist/               # Build output (generat automàticament)
+├── scripts/            # Scripts d'inicialització (NO es pugen a git)
+├── index.html          # HTML template
+├── vite.config.js      # Vite configuration
+├── render.yaml         # Configuració Render
+└── package.json        # Dependencies + scripts (un sol fitxer!)
 ```
 
 ## Variables d'entorn necessàries
@@ -136,9 +142,11 @@ fantasy-betting/
 
 ## Comandos útils
 
-- `npm run render-build`: Build complet (backend + frontend)
-- `npm start`: Inicia el servidor
-- `npm run dev`: Mode desenvolupament (només backend)
+- `npm start`: Mode desenvolupament (frontend + backend simultanis)
+- `npm run server`: Només servidor backend
+- `npm run dev`: Només frontend (Vite)
+- `npm run build`: Build del frontend per producció
+- `npm run start:prod`: Servidor producció (serveix dist/)
 
 ## Troubleshooting
 
