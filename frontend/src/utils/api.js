@@ -75,10 +75,12 @@ export const bets = {
         const response = await api.post('/bets/parlay', data);
         return response.data;
     },
+    // Cancel·lar aposta simple
     cancel: async (id) => {
         const response = await api.delete(`/bets/${id}`);
         return response;
     },
+    // Cancel·lar aposta combinada
     cancelParlay: async (id) => {
         const response = await api.delete(`/bets/parlay/${id}`);
         return response;
