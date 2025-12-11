@@ -47,6 +47,24 @@ export const bets = {
             return [];
         }
     },
+    getMy: async () => {
+        try {
+            const response = await api.get('/bets/my');
+            return response.data;
+        } catch (error) {
+            console.error("Error my bets:", error);
+            return [];
+        }
+    },
+    getMyParlays: async () => {
+        try {
+            const response = await api.get('/bets/my-parlays');
+            return response.data;
+        } catch (error) {
+            console.error("Error my parlays:", error);
+            return [];
+        }
+    },
     create: async (data) => {
         const response = await api.post('/bets', data);
         return response.data;
@@ -54,6 +72,14 @@ export const bets = {
     createParlay: async (data) => {
         const response = await api.post('/bets/parlay', data);
         return response.data;
+    },
+    cancel: async (id) => {
+        const response = await api.post(`/bets/${id}/cancel`);
+        return response;
+    },
+    cancelParlay: async (id) => {
+        const response = await api.post(`/bets/parlay/${id}/cancel`);
+        return response;
     },
     delete: async (id) => {
         await api.delete(`/bets/${id}`);
@@ -141,6 +167,15 @@ export const users = {
             reason
         });
         return response.data;
+    },
+    getTransactions: async () => {
+        try {
+            const response = await api.get('/users/transactions');
+            return response.data;
+        } catch (error) {
+            console.error("Error transactions:", error);
+            return [];
+        }
     }
 };
 
