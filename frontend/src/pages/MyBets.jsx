@@ -20,9 +20,9 @@ function MyBets() {
         betsApi.getMyParlays(),
         usersApi.getTransactions()
       ]);
-      setBets(betsRes.data);
-      setParlays(parlaysRes.data);
-      setTransactions(transRes.data);
+      setBets(betsRes || []);
+      setParlays(parlaysRes || []);
+      setTransactions(transRes || []);
     } catch (err) {
       console.error('Error en carregar dades:', err);
     } finally {

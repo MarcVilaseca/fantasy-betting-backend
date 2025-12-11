@@ -76,8 +76,8 @@ function Home() {
           bets: selectedBets,
           amount
         });
-        updateUser({ coins: response.data.newBalance });
-        alert(`Aposta combinada creada! Retorn potencial: ${response.data.potential_return.toFixed(2)} monedes`);
+        updateUser({ coins: response.newBalance });
+        alert(`Aposta combinada creada! Retorn potencial: ${response.potential_return.toFixed(2)} monedes`);
       } else {
         if (selectedBets.length !== 1) {
           alert('Selecciona una sola aposta per aposta simple');
@@ -88,8 +88,8 @@ function Home() {
           ...bet,
           amount
         });
-        updateUser({ coins: response.data.newBalance });
-        alert(`Aposta creada! Retorn potencial: ${response.data.bet.potential_return.toFixed(2)} monedes`);
+        updateUser({ coins: response.newBalance });
+        alert(`Aposta creada! Retorn potencial: ${response.bet.potential_return.toFixed(2)} monedes`);
       }
 
       setSelectedBets([]);

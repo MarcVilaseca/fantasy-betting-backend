@@ -1,8 +1,13 @@
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
 import { initDatabase, userQueries, matchQueries, fantasyQueries } from './config/db.js';
+
+// Carregar variables d'entorn de producció
+dotenv.config({ path: '.env.production' });
 
 async function initProduction() {
   console.log('🔧 Inicialitzant base de dades de producció...');
+  console.log('📍 Database:', process.env.DATABASE_URL ? 'PostgreSQL (producció)' : 'SQLite (local)');
   await initDatabase();
 
   // 1. CREAR ADMIN
@@ -15,7 +20,10 @@ async function initProduction() {
     if (!existing) {
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
       const result = await userQueries.create(adminUsername, hashedPassword, 1);
-      await userQueries.updateCoins(0, result.lastInsertRowid);
+
+      // PostgreSQL retorna l'ID directament, SQLite usa lastInsertRowid
+      const userId = result.id || result.lastInsertRowid;
+      await userQueries.updateCoins(0, userId);
       console.log('✅ Admin creat: username=admin, password=admin123, coins=0');
     } else {
       console.log('⚠️  Admin ja existeix');

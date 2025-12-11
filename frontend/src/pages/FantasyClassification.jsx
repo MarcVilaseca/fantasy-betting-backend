@@ -75,14 +75,14 @@ function FantasyClassification() {
                   <th className="position-header">Posició</th>
                   <th className="team-header">Club</th>
                   <th className="matchdays-header">Jornades</th>
-                  <th className="points-header">Punts Totals</th>
-                  <th className="average-header">Mitjana</th>
+                  <th className="points-header">Punts</th>
                 </tr>
               </thead>
               <tbody>
                 {classification.map((team, index) => {
                   const position = index + 1;
-                  const average = (team.total_points / team.matchdays_played).toFixed(2);
+                  const totalPoints = Math.round(parseFloat(team.total_points));
+                  const average = Math.round(parseFloat(team.avg_points));
                   const medal = getMedalEmoji(position);
 
                   return (
@@ -94,11 +94,13 @@ function FantasyClassification() {
                       <td className="team-cell">
                         <span className="team-name">{team.team}</span>
                       </td>
-                      <td className="matchdays-cell">{team.matchdays_played}</td>
+                      <td className="matchdays-cell">{team.matches_played}</td>
                       <td className="points-cell">
-                        <span className="total-points">{team.total_points}</span>
+                        <span className="total-points">{totalPoints}</span>
+                        <span className="average-points" style={{ marginLeft: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                          (mitjana: {average})
+                        </span>
                       </td>
-                      <td className="average-cell">{average}</td>
                     </tr>
                   );
                 })}
