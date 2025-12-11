@@ -41,11 +41,11 @@ router.post('/init-db', async (req, res) => {
 
       await matchQueries.create(
         'Jaume Creixell U.E.',
-        'LINYOLETS E.C.',
+        'Nottingham_Pressa',
         'Jornada 18',
         new Date('2025-01-17T20:59:00')
       );
-      results.matches.push('Jaume Creixell U.E. vs LINYOLETS E.C.');
+      results.matches.push('Jaume Creixell U.E. vs Nottingham_Pressa');
     } else {
       results.matches = { created: false, message: `Ja hi ha ${matches.length} partits` };
     }
@@ -57,34 +57,34 @@ router.post('/init-db', async (req, res) => {
         'Jaume Creixell U.E.',
         "L'ESQUADRA VILAS...",
         'CE FerranitoPito',
-        'LINYOLETS E.C.',
-        'CD Napasakatelas',
-        'FC Suquesme',
-        'UD Elninyo',
-        'ATLETIC VILLAMAÑO',
-        'FC Rebollet',
-        'AD Tumbalarata',
-        'UD LOS COYOTES',
-        'FC JERICLES',
-        'CF La Mandanga',
-        'CD Espinetes Fighters'
+        'Nottingham_Pressa',
+        'AstoNitu F.C',
+        'Ruizinho F. C.',
+        'Laminyamal T\'FC',
+        'SANCOTS 304',
+        'pepe rubianes',
+        'ArnauBabau F.C',
+        'jaaavichu05',
+        'Ao Tat Kha FC',
+        'Catllaneta',
+        'Babycots F.C'
       ];
 
       const scores = {
-        'Jaume Creixell U.E.': [60, 70, 55, 65, 80, 75, 68, 72, 64, 78, 82, 70, 66, 74],
-        "L'ESQUADRA VILAS...": [65, 72, 68, 70, 75, 78, 71, 69, 76, 73, 80, 68, 72, 77],
-        'CE FerranitoPito': [58, 64, 60, 66, 72, 70, 65, 68, 71, 74, 76, 66, 69, 73],
-        'LINYOLETS E.C.': [62, 68, 64, 68, 74, 72, 68, 70, 73, 76, 78, 70, 71, 75],
-        'CD Napasakatelas': [55, 60, 58, 62, 68, 66, 62, 64, 67, 70, 72, 64, 66, 69],
-        'FC Suquesme': [57, 63, 59, 64, 70, 68, 64, 66, 69, 72, 74, 65, 68, 71],
-        'UD Elninyo': [54, 58, 56, 60, 66, 64, 60, 62, 65, 68, 70, 62, 64, 67],
-        'ATLETIC VILLAMAÑO': [56, 62, 58, 63, 69, 67, 63, 65, 68, 71, 73, 64, 67, 70],
-        'FC Rebollet': [52, 56, 54, 58, 64, 62, 58, 60, 63, 66, 68, 60, 62, 65],
-        'AD Tumbalarata': [53, 57, 55, 59, 65, 63, 59, 61, 64, 67, 69, 61, 63, 66],
-        'UD LOS COYOTES': [50, 54, 52, 56, 62, 60, 56, 58, 61, 64, 66, 58, 60, 63],
-        'FC JERICLES': [51, 55, 53, 57, 63, 61, 57, 59, 62, 65, 67, 59, 61, 64],
-        'CF La Mandanga': [48, 52, 50, 54, 60, 58, 54, 56, 59, 62, 64, 56, 58, 61],
-        'CD Espinetes Fighters': [49, 53, 51, 55, 61, 59, 55, 57, 60, 63, 65, 57, 59, 62]
+        'Jaume Creixell U.E.': [85, 100, 60, 75, 64, 88, 73, 62, 68, 52, 80, 82, 67, 67],
+        "L'ESQUADRA VILAS...": [69, 90, 65, 70, 71, 71, 85, 47, 64, 61, 85, 64, 65, 41],
+        'CE FerranitoPito': [86, 51, 91, 35, 72, 61, 80, 38, 73, 49, 83, 80, 61, 86],
+        'Nottingham_Pressa': [73, 64, 57, 72, 69, 48, 54, 34, 71, 53, 71, 82, 63, 82],
+        'AstoNitu F.C': [63, 58, 44, 77, 57, 51, 53, 61, 70, 61, 60, 89, 41, 87],
+        'Ruizinho F. C.': [47, 59, 51, 80, 52, 54, 70, 40, 86, 76, 44, 27, 65, 79],
+        'Laminyamal T\'FC': [52, 84, 73, 58, 74, 52, 60, 27, 60, 32, 80, 57, 46, 45],
+        'SANCOTS 304': [53, 51, 69, 25, 56, 37, 47, 21, 67, 68, 77, 73, 81, 58],
+        'pepe rubianes': [71, 43, 50, 59, 0, 83, 61, 53, 60, 83, 77, 55, 67, 65],
+        'ArnauBabau F.C': [65, 31, 54, 49, 70, 43, 40, 42, 74, 59, 67, 60, 77, 48],
+        'jaaavichu05': [60, 51, 80, 52, 45, 64, 55, 59, 74, 49, 34, 60, 33, 47],
+        'Ao Tat Kha FC': [34, 47, 37, 43, 23, 39, 60, 56, 44, 70, 72, 40, 50, 62],
+        'Catllaneta': [50, 68, 42, 20, 47, 63, 31, 46, 42, 40, 63, 53, 45, 65],
+        'Babycots F.C': [47, 39, 35, 54, 52, 44, 21, 66, 70, 53, 64, 43, 57, 55]
       };
 
       for (const team of teams) {
