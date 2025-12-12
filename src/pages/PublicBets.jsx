@@ -4,8 +4,10 @@ import './PublicBets.css';
 
 function PublicBets() {
   const [bets, setBets] = useState([]);
+  const [parlays, setParlays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('simple');
 
   useEffect(() => {
     fetchPublicBets();
@@ -15,7 +17,8 @@ function PublicBets() {
     try {
       setLoading(true);
       const response = await betsApi.getPublic();
-      setBets(response || []);
+      setBets(response.bets || []);
+      setParlays(response.parlays || []);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.error || err.message);
@@ -61,53 +64,144 @@ function PublicBets() {
         Aquí pots veure totes les apostes que han fet els altres clubs
       </p>
 
-      {bets.length === 0 ? (
-        <div className="no-bets">
-          <p>Encara no hi ha apostes públiques</p>
-        </div>
-      ) : (
-        <div className="bets-table-container">
-          <table className="bets-table">
-            <thead>
-              <tr>
-                <th>Club</th>
-                <th>Partit</th>
-                <th>Ronda</th>
-                <th>Tipus</th>
-                <th>Selecció</th>
-                <th>Quota</th>
-                <th>Import</th>
-                <th>Retorn Potencial</th>
-                <th>Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bets.map((bet) => (
-                <tr key={bet.id} className="bet-row">
-                  <td className="username-cell">{bet.username}</td>
-                  <td className="match-cell">
-                    {bet.team1} vs {bet.team2}
-                  </td>
-                  <td>{bet.round}</td>
-                  <td>{getBetTypeLabel(bet.bet_type)}</td>
-                  <td className="selection-cell">{bet.selection}</td>
-                  <td className="odds-cell">{bet.odds}</td>
-                  <td className="amount-cell">{bet.amount} 💰</td>
-                  <td className="return-cell">{bet.potential_return} 💰</td>
-                  <td className="date-cell">
-                    {new Date(bet.created_at).toLocaleDateString('ca-ES', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--border)' }}>
+        <button
+          onClick={() => setActiveTab('simple')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '0.75rem 1rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            borderBottom: activeTab === 'simple' ? '3px solid var(--primary)' : 'none',
+            color: activeTab === 'simple' ? 'var(--primary)' : 'var(--text-secondary)'
+          }}
+        >
+          Apostes simples ({bets.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('parlay')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '0.75rem 1rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            borderBottom: activeTab === 'parlay' ? '3px solid var(--primary)' : 'none',
+            color: activeTab === 'parlay' ? 'var(--primary)' : 'var(--text-secondary)'
+          }}
+        >
+          Combinades ({parlays.length})
+        </button>
+      </div>
+
+      {/* Apostes simples */}
+      {activeTab === 'simple' && (
+        <>
+          {bets.length === 0 ? (
+            <div className="no-bets">
+              <p>Encara no hi ha apostes simples públiques</p>
+            </div>
+          ) : (
+            <div className="bets-table-container">
+              <table className="bets-table">
+                <thead>
+                  <tr>
+                    <th>Club</th>
+                    <th>Partit</th>
+                    <th>Ronda</th>
+                    <th>Tipus</th>
+                    <th>Selecció</th>
+                    <th>Quota</th>
+                    <th>Import</th>
+                    <th>Retorn Potencial</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bets.map((bet) => (
+                    <tr key={bet.id} className="bet-row">
+                      <td className="username-cell">{bet.username}</td>
+                      <td className="match-cell">
+                        {bet.team1} vs {bet.team2}
+                      </td>
+                      <td>{bet.round}</td>
+                      <td>{getBetTypeLabel(bet.bet_type)}</td>
+                      <td className="selection-cell">{bet.selection}</td>
+                      <td className="odds-cell">{bet.odds}</td>
+                      <td className="amount-cell">{bet.amount} 💰</td>
+                      <td className="return-cell">{bet.potential_return} 💰</td>
+                      <td className="date-cell">
+                        {new Date(bet.created_at).toLocaleDateString('ca-ES', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Apostes combinades */}
+      {activeTab === 'parlay' && (
+        <>
+          {parlays.length === 0 ? (
+            <div className="no-bets">
+              <p>Encara no hi ha apostes combinades públiques</p>
+            </div>
+          ) : (
+            <div className="bets-table-container">
+              <table className="bets-table">
+                <thead>
+                  <tr>
+                    <th>Club</th>
+                    <th>Apostes</th>
+                    <th>Quota Total</th>
+                    <th>Import</th>
+                    <th>Retorn Potencial</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {parlays.map((parlay) => (
+                    <tr key={parlay.id} className="bet-row">
+                      <td className="username-cell">{parlay.username}</td>
+                      <td className="selection-cell">
+                        <div style={{ fontSize: '0.875rem' }}>
+                          {parlay.bets.map((bet, idx) => (
+                            <div key={idx} style={{ marginBottom: '0.25rem' }}>
+                              <strong>{bet.team1} vs {bet.team2}</strong>: {bet.selection} @ {bet.odds}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="odds-cell">{parlay.total_odds}</td>
+                      <td className="amount-cell">{parlay.amount} 💰</td>
+                      <td className="return-cell">{parlay.potential_return} 💰</td>
+                      <td className="date-cell">
+                        {new Date(parlay.created_at).toLocaleDateString('ca-ES', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

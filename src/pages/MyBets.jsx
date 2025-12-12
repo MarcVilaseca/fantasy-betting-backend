@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { bets as betsApi, users as usersApi } from '../utils/api';
+import { useAuth } from '../utils/AuthContext';
 
 function MyBets() {
+  const { updateUser } = useAuth();
   const [bets, setBets] = useState([]);
   const [parlays, setParlays] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -20,6 +22,8 @@ function MyBets() {
         betsApi.getMyParlays(),
         usersApi.getTransactions()
       ]);
+      console.log('📊 Apostes carregades:', betsRes);
+      console.log('📊 Status de cada aposta:', betsRes?.map(b => ({ id: b.id, status: b.status, amount: b.amount })));
       setBets(betsRes || []);
       setParlays(parlaysRes || []);
       setTransactions(transRes || []);
@@ -31,19 +35,27 @@ function MyBets() {
   };
 
   const handleCancelBet = async (betId) => {
+    console.log('🔴 handleCancelBet called with betId:', betId);
+
     if (!confirm('Estàs segur que vols cancel·lar aquesta aposta? Es retornaran les monedes.')) {
+      console.log('🔴 User cancelled confirmation');
       return;
     }
 
+    console.log('🔴 Calling API to cancel bet...');
     try {
       const response = await betsApi.cancel(betId);
-      alert(`Aposta cancel·lada! ${response.data.refundAmount} monedes retornades.`);
-      // Reload data to get updated balance and bets
+      console.log('🔴 API response:', response);
+
+      // Actualitzar saldo a la navbar sense recarregar
+      if (response.data?.newBalance !== undefined) {
+        updateUser({ coins: response.data.newBalance });
+      }
+
+      // Recarregar dades - l'aposta desapareixerà perquè està filtrada
       await loadData();
-      // Reload user to update coins in navbar
-      window.location.reload();
     } catch (err) {
-      console.error('Error en cancel·lar aposta:', err);
+      console.error('🔴 Error en cancel·lar aposta:', err);
       alert(err.response?.data?.error || 'Error en cancel·lar l\'aposta');
     }
   };
@@ -55,11 +67,14 @@ function MyBets() {
 
     try {
       const response = await betsApi.cancelParlay(parlayId);
-      alert(`Aposta combinada cancel·lada! ${response.data.refundAmount} monedes retornades.`);
-      // Reload data to get updated balance and bets
+
+      // Actualitzar saldo a la navbar sense recarregar
+      if (response.data?.newBalance !== undefined) {
+        updateUser({ coins: response.data.newBalance });
+      }
+
+      // Recarregar dades - l'aposta desapareixerà perquè està filtrada
       await loadData();
-      // Reload user to update coins in navbar
-      window.location.reload();
     } catch (err) {
       console.error('Error en cancel·lar aposta combinada:', err);
       alert(err.response?.data?.error || 'Error en cancel·lar l\'aposta combinada');
@@ -117,7 +132,7 @@ function MyBets() {
         <div className="card-header">Les meves apostes</div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--border)' }}>
+        <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid var(--border)' }}>
           <button
             onClick={() => setActiveTab('simple')}
             style={{
@@ -130,7 +145,7 @@ function MyBets() {
               color: activeTab === 'simple' ? 'var(--primary)' : 'var(--text-secondary)'
             }}
           >
-            Apostes simples ({bets.filter(b => b.amount > 0).length})
+            Apostes simples ({bets.filter(b => b.amount > 0 && b.status !== 'cancelled').length})
           </button>
           <button
             onClick={() => setActiveTab('parlay')}
@@ -144,7 +159,7 @@ function MyBets() {
               color: activeTab === 'parlay' ? 'var(--primary)' : 'var(--text-secondary)'
             }}
           >
-            Combinades ({parlays.length})
+            Combinades ({parlays.filter(p => p.status !== 'cancelled').length})
           </button>
           <button
             onClick={() => setActiveTab('history')}
@@ -162,15 +177,17 @@ function MyBets() {
           </button>
         </div>
 
-        {/* Apostes simples */}
-        {activeTab === 'simple' && (
+        {/* Tab Content */}
+        <div style={{ paddingTop: '1.5rem' }}>
+          {/* Apostes simples */}
+          {activeTab === 'simple' && (
           <div>
-            {bets.filter(b => b.amount > 0).length === 0 ? (
+            {bets.filter(b => b.amount > 0 && b.status !== 'cancelled').length === 0 ? (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>
                 Encara no has fet cap aposta simple
               </p>
             ) : (
-              bets.filter(b => b.amount > 0).map(bet => (
+              bets.filter(b => b.amount > 0 && b.status !== 'cancelled').map(bet => (
                 <div
                   key={bet.id}
                   style={{
@@ -207,7 +224,10 @@ function MyBets() {
                     </div>
                     {bet.status === 'pending' && (
                       <button
-                        onClick={() => handleCancelBet(bet.id)}
+                        onClick={() => {
+                          alert('BOTÓ CLICAT! ID: ' + bet.id);
+                          handleCancelBet(bet.id);
+                        }}
                         style={{
                           background: '#e74c3c',
                           color: 'white',
@@ -232,12 +252,12 @@ function MyBets() {
         {/* Combinades */}
         {activeTab === 'parlay' && (
           <div>
-            {parlays.length === 0 ? (
+            {parlays.filter(p => p.status !== 'cancelled').length === 0 ? (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>
                 Encara no has fet cap aposta combinada
               </p>
             ) : (
-              parlays.map(parlay => (
+              parlays.filter(p => p.status !== 'cancelled').map(parlay => (
                 <div
                   key={parlay.id}
                   style={{
@@ -352,9 +372,9 @@ function MyBets() {
                     </div>
                     <div style={{
                       fontWeight: 700,
-                      color: tx.amount > 0 ? 'var(--secondary)' : 'var(--danger)'
+                      color: parseFloat(tx.amount) > 0 ? 'var(--secondary)' : 'var(--danger)'
                     }}>
-                      {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)}
+                      {parseFloat(tx.amount) > 0 ? '+' : ''}{parseFloat(tx.amount).toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -362,6 +382,7 @@ function MyBets() {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

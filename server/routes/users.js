@@ -32,7 +32,7 @@ router.get('/leaderboard', async (req, res) => {
 });
 
 // GET /api/users/me/transactions - Obtenir historial de transaccions
-router.get('/me/transactions', authenticateToken, async (req, res) => {
+router.get('/transactions', authenticateToken, async (req, res) => {
   try {
     const transactions = await transactionQueries.getByUser(req.user.id);
     res.json(transactions);

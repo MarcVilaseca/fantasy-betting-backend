@@ -9,7 +9,7 @@
     "server": "node server/index.js",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "start:prod": "node server/index.js",
-    "build": "vite build --force --emptyOutDir",
+    "build": "vite build --emptyOutDir",
     "preview": "vite preview",
     "postinstall": "npm run build"
   },

@@ -7,16 +7,36 @@ const router = express.Router();
 
 // Funció per verificar si encara es pot apostar (bloqueig temporal)
 function isBettingAllowed() {
+  // Horari de Barcelona (Europe/Madrid = UTC+1 en hivern, UTC+2 en estiu)
   const now = new Date();
-  const lockoutTime = new Date('2025-12-12T20:59:00');
+  const lockoutTime = new Date('2025-12-12T20:59:00+01:00'); // Hora de Barcelona
+
+  console.log('🕐 Comprovant bloqueig d\'apostes:');
+  console.log('  - Ara:', now.toLocaleString('ca-ES', { timeZone: 'Europe/Madrid' }));
+  console.log('  - Bloqueig:', lockoutTime.toLocaleString('ca-ES', { timeZone: 'Europe/Madrid' }));
+  console.log('  - Es pot apostar?', now < lockoutTime);
+
   return now < lockoutTime;
 }
 
-// GET /api/bets/public - Obtenir totes les apostes públiques
+// GET /api/bets/public - Obtenir totes les apostes públiques (simples i combinades)
 router.get('/public', authenticateToken, async (req, res) => {
   try {
     const bets = await betQueries.getAllPublic();
-    res.json(bets);
+    const parlays = await parlayQueries.getAllPublic();
+
+    // Per cada combinada, obtenir els items
+    const parlaysWithItems = await Promise.all(
+      parlays.map(async parlay => ({
+        ...parlay,
+        bets: await parlayQueries.getItems(parlay.id)
+      }))
+    );
+
+    res.json({
+      bets: bets,
+      parlays: parlaysWithItems
+    });
   } catch (error) {
     console.error('Error en obtenir apostes públiques:', error);
     res.status(500).json({ error: 'Error en obtenir apostes públiques' });
@@ -35,7 +55,7 @@ router.get('/my', authenticateToken, async (req, res) => {
 });
 
 // GET /api/bets/my/parlays - Obtenir apostes combinades de l'usuari
-router.get('/my/parlays', authenticateToken, async (req, res) => {
+router.get('/my-parlays', authenticateToken, async (req, res) => {
   try {
     const parlays = await parlayQueries.getByUser(req.user.id);
 
@@ -246,6 +266,62 @@ router.post('/parlay', authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/bets/:id/cancel - Cancel·lar aposta simple (compatible amb frontend)
+router.post('/:id/cancel', authenticateToken, async (req, res) => {
+  try {
+    // Verificar si encara es pot apostar (abans del bloqueig)
+    if (!isBettingAllowed()) {
+      return res.status(403).json({ error: 'El termini per cancel·lar apostes ha finalitzat' });
+    }
+
+    const bet = await betQueries.findById(req.params.id);
+
+    if (!bet) {
+      return res.status(404).json({ error: 'Aposta no trobada' });
+    }
+
+    // Verificar que l'usuari és el propietari
+    if (bet.user_id !== req.user.id) {
+      return res.status(403).json({ error: 'No tens permís per cancel·lar aquesta aposta' });
+    }
+
+    // Verificar que l'aposta està pendent
+    if (bet.status !== 'pending') {
+      return res.status(400).json({ error: 'Només es poden cancel·lar apostes pendents' });
+    }
+
+    // Verificar que té una quantitat a retornar (no és part d'una combinada)
+    if (bet.amount === 0) {
+      return res.status(400).json({ error: 'No es poden cancel·lar apostes que formen part d\'una combinada' });
+    }
+
+    // Retornar monedes a l'usuari
+    const user = await userQueries.findById(req.user.id);
+    const newCoins = Number(user.coins) + Number(bet.amount);
+    await userQueries.updateCoins(newCoins, req.user.id);
+
+    // Marcar aposta com a cancel·lada
+    await betQueries.updateStatus('cancelled', null, req.params.id);
+
+    // Registrar transacció
+    await transactionQueries.create(
+      req.user.id,
+      bet.amount,
+      'refund',
+      `Cancel·lació aposta #${req.params.id}`
+    );
+
+    res.json({
+      message: 'Aposta cancel·lada i monedes retornades',
+      amount: bet.amount,
+      newBalance: newCoins
+    });
+  } catch (error) {
+    console.error('Error en cancel·lar aposta:', error);
+    res.status(500).json({ error: 'Error en cancel·lar aposta' });
+  }
+});
+
 // GET /api/bets/:id - Obtenir detalls d'una aposta
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
@@ -320,6 +396,61 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error en cancel·lar aposta:', error);
     res.status(500).json({ error: 'Error en cancel·lar aposta' });
+  }
+});
+
+// POST /api/bets/parlay/:id/cancel - Cancel·lar aposta combinada (compatible amb frontend)
+router.post('/parlay/:id/cancel', authenticateToken, async (req, res) => {
+  try {
+    // Verificar si encara es pot apostar (abans del bloqueig)
+    if (!isBettingAllowed()) {
+      return res.status(403).json({ error: 'El termini per cancel·lar apostes ha finalitzat' });
+    }
+
+    const parlay = await parlayQueries.findById(req.params.id);
+
+    if (!parlay) {
+      return res.status(404).json({ error: 'Aposta combinada no trobada' });
+    }
+
+    // Verificar que l'usuari és el propietari
+    if (parlay.user_id !== req.user.id) {
+      return res.status(403).json({ error: 'No tens permís per cancel·lar aquesta aposta' });
+    }
+
+    // Verificar que l'aposta està pendent
+    if (parlay.status !== 'pending') {
+      return res.status(400).json({ error: 'Només es poden cancel·lar apostes pendents' });
+    }
+
+    // Retornar monedes a l'usuari
+    const user = await userQueries.findById(req.user.id);
+    const newCoins = Number(user.coins) + Number(parlay.amount);
+    await userQueries.updateCoins(newCoins, req.user.id);
+
+    // Registrar transacció
+    await transactionQueries.create(
+      req.user.id,
+      parlay.amount,
+      'parlay_cancelled',
+      `Aposta combinada cancel·lada @ ${parlay.total_odds}`
+    );
+
+    // Marcar combinada com a cancel·lada
+    await parlayQueries.updateStatus('cancelled', null, req.params.id);
+
+    // També cancel·lar totes les apostes individuals
+    const items = await parlayQueries.getItems(req.params.id);
+    await Promise.all(items.map(item => betQueries.updateStatus('cancelled', null, item.bet_id)));
+
+    res.json({
+      message: 'Aposta combinada cancel·lada i monedes retornades',
+      amount: parlay.amount,
+      newBalance: newCoins
+    });
+  } catch (error) {
+    console.error('Error en cancel·lar combinada:', error);
+    res.status(500).json({ error: 'Error en cancel·lar combinada' });
   }
 });
 

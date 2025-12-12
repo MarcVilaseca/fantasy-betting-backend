@@ -88,7 +88,8 @@ export const parlayQueries = {
   getItems: async (pid) => all('SELECT b.*, m.team1, m.team2 FROM parlay_bet_items pbi JOIN bets b ON pbi.bet_id = b.id JOIN matches m ON b.match_id = m.id WHERE pbi.parlay_bet_id = $1', [pid]),
   findById: async (id) => get('SELECT * FROM parlay_bets WHERE id = $1', [id]),
   updateStatus: async (s, r, id) => { const res = await query('UPDATE parlay_bets SET status = $1, result = $2 WHERE id = $3', [s, r, id]); return { changes: res.rowCount }; },
-  delete: async (id) => { const r = await query('DELETE FROM parlay_bets WHERE id = $1', [id]); return { changes: r.rowCount }; }
+  delete: async (id) => { const r = await query('DELETE FROM parlay_bets WHERE id = $1', [id]); return { changes: r.rowCount }; },
+  getAllPublic: async () => all("SELECT pb.*, u.username FROM parlay_bets pb JOIN users u ON pb.user_id = u.id WHERE pb.status = 'pending' ORDER BY pb.created_at DESC")
 };
 
 export const transactionQueries = {
