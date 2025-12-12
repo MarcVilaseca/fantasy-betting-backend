@@ -1,26 +1,37 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:Disbauxa2001@localhost:5432/fantasy_betting';
+const isProduction = !!process.env.DATABASE_URL;
+
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:Disbauxa2001@localhost:5432/fantasy_betting'
+  connectionString,
+  ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
 async function fixSequences() {
   try {
-    // Reset transactions sequence
-    const result = await pool.query(`
-      SELECT setval('transactions_id_seq', COALESCE((SELECT MAX(id) FROM transactions), 0) + 1, false);
-    `);
-    console.log('✅ Seqüència de transactions resetejada:', result.rows[0]);
+    console.log('🔧 Resincronitzant totes les seqüències PostgreSQL...\n');
 
-    // Reset bets sequence
-    const result2 = await pool.query(`
-      SELECT setval('bets_id_seq', COALESCE((SELECT MAX(id) FROM bets), 0) + 1, false);
-    `);
-    console.log('✅ Seqüència de bets resetejada:', result2.rows[0]);
+    const sequences = [
+      { table: 'users', sequence: 'users_id_seq' },
+      { table: 'matches', sequence: 'matches_id_seq' },
+      { table: 'bets', sequence: 'bets_id_seq' },
+      { table: 'parlay_bets', sequence: 'parlay_bets_id_seq' },
+      { table: 'parlay_bet_items', sequence: 'parlay_bet_items_id_seq' },
+      { table: 'transactions', sequence: 'transactions_id_seq' },
+      { table: 'fantasy_scores', sequence: 'fantasy_scores_id_seq' }
+    ];
+
+    for (const { table, sequence } of sequences) {
+      const result = await pool.query(`
+        SELECT setval('${sequence}', COALESCE((SELECT MAX(id) FROM ${table}), 0) + 1, false);
+      `);
+      console.log(`✅ ${table}: Seqüència ajustada a ${result.rows[0].setval}`);
+    }
 
     await pool.end();
-    console.log('✅ Totes les seqüències resetejades correctament!');
+    console.log('\n🎉 Totes les seqüències resincronitzades correctament!');
     process.exit(0);
   } catch (error) {
     console.error('❌ Error:', error);

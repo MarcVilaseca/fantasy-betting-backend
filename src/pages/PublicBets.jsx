@@ -65,34 +65,20 @@ function PublicBets() {
       </p>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--border)' }}>
+      <div className="tabs-container">
         <button
           onClick={() => setActiveTab('simple')}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '0.75rem 1rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            borderBottom: activeTab === 'simple' ? '3px solid var(--primary)' : 'none',
-            color: activeTab === 'simple' ? 'var(--primary)' : 'var(--text-secondary)'
-          }}
+          className={`tab-button ${activeTab === 'simple' ? 'active' : ''}`}
         >
-          Apostes simples ({bets.length})
+          Apostes simples
+          <span className="tab-count">{bets.length}</span>
         </button>
         <button
           onClick={() => setActiveTab('parlay')}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '0.75rem 1rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            borderBottom: activeTab === 'parlay' ? '3px solid var(--primary)' : 'none',
-            color: activeTab === 'parlay' ? 'var(--primary)' : 'var(--text-secondary)'
-          }}
+          className={`tab-button ${activeTab === 'parlay' ? 'active' : ''}`}
         >
-          Combinades ({parlays.length})
+          Combinades
+          <span className="tab-count">{parlays.length}</span>
         </button>
       </div>
 

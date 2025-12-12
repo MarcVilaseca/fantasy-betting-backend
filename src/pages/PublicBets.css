@@ -2,17 +2,73 @@
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 600px;
 }
 
 .public-bets-page h1 {
   color: #2c3e50;
   margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .page-description {
   color: #7f8c8d;
   margin-bottom: 30px;
   font-size: 1.1rem;
+}
+
+/* Tabs */
+.tabs-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #6b7280;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  bottom: -2px;
+}
+
+.tab-button:hover {
+  color: #2563eb;
+  background: #f3f4f6;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab-button.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.tab-count {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: #e5e7eb;
+  color: #374151;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tab-button.active .tab-count {
+  background: #2563eb;
+  color: white;
 }
 
 .bets-table-container {
