@@ -1,4 +1,4 @@
-function MatchCard({ match, onSelectBet, selectedBets }) {
+function MatchCard({ match, onSelectBet, selectedBets, disabled = false }) {
   const { team1, team2, round, betOptions, betting_closes_at } = match;
 
   const isSelected = (matchId, betType, selection) => {
@@ -34,7 +34,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
           <div className="team-odds">{betOptions.match.team1.odds}</div>
           <button
             className={`bet-button ${isSelected(match.id, 'winner', team1) ? 'selected' : ''}`}
-            onClick={() => onSelectBet({
+            onClick={() => !disabled && onSelectBet({
               match_id: match.id,
               bet_type: 'winner',
               selection: team1,
@@ -43,8 +43,9 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
               team2,
               round
             })}
+            disabled={disabled}
           >
-            Apostar
+            {disabled ? 'Tancat' : 'Apostar'}
           </button>
         </div>
 
@@ -55,7 +56,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
           <div className="team-odds">{betOptions.match.team2.odds}</div>
           <button
             className={`bet-button ${isSelected(match.id, 'winner', team2) ? 'selected' : ''}`}
-            onClick={() => onSelectBet({
+            onClick={() => !disabled && onSelectBet({
               match_id: match.id,
               bet_type: 'winner',
               selection: team2,
@@ -64,8 +65,9 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
               team2,
               round
             })}
+            disabled={disabled}
           >
-            Apostar
+            {disabled ? 'Tancat' : 'Apostar'}
           </button>
         </div>
       </div>
@@ -76,7 +78,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
         <div className="bet-buttons">
           <button
             className={`bet-button ${isSelected(match.id, 'captain', team1) ? 'selected' : ''}`}
-            onClick={() => onSelectBet({
+            onClick={() => !disabled && onSelectBet({
               match_id: match.id,
               bet_type: 'captain',
               selection: team1,
@@ -85,6 +87,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
               team2,
               round
             })}
+            disabled={disabled}
           >
             <span className="bet-label">{team1}</span>
             <span className="bet-odds-display">{betOptions.captain.team1.odds}</span>
@@ -92,7 +95,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
 
           <button
             className={`bet-button ${isSelected(match.id, 'captain', team2) ? 'selected' : ''}`}
-            onClick={() => onSelectBet({
+            onClick={() => !disabled && onSelectBet({
               match_id: match.id,
               bet_type: 'captain',
               selection: team2,
@@ -101,6 +104,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
               team2,
               round
             })}
+            disabled={disabled}
           >
             <span className="bet-label">{team2}</span>
             <span className="bet-odds-display">{betOptions.captain.team2.odds}</span>
@@ -114,7 +118,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
         <div className="bet-buttons">
           <button
             className={`bet-button ${isSelected(match.id, 'over_under', `over:${betOptions.overUnder.line}`) ? 'selected' : ''}`}
-            onClick={() => onSelectBet({
+            onClick={() => !disabled && onSelectBet({
               match_id: match.id,
               bet_type: 'over_under',
               selection: `over:${betOptions.overUnder.line}`,
@@ -123,6 +127,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
               team2,
               round
             })}
+            disabled={disabled}
           >
             <span className="bet-label">Over {betOptions.overUnder.line}</span>
             <span className="bet-odds-display">{betOptions.overUnder.overOdds}</span>
@@ -130,7 +135,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
 
           <button
             className={`bet-button ${isSelected(match.id, 'over_under', `under:${betOptions.overUnder.line}`) ? 'selected' : ''}`}
-            onClick={() => onSelectBet({
+            onClick={() => !disabled && onSelectBet({
               match_id: match.id,
               bet_type: 'over_under',
               selection: `under:${betOptions.overUnder.line}`,
@@ -139,6 +144,7 @@ function MatchCard({ match, onSelectBet, selectedBets }) {
               team2,
               round
             })}
+            disabled={disabled}
           >
             <span className="bet-label">Under {betOptions.overUnder.line}</span>
             <span className="bet-odds-display">{betOptions.overUnder.underOdds}</span>

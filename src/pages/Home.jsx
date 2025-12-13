@@ -5,10 +5,12 @@ import MatchCard from '../components/MatchCard';
 import BetSlip from '../components/BetSlip';
 
 function Home() {
-  const [matches, setMatches] = useState([]);
+  const [openMatches, setOpenMatches] = useState([]);
+  const [closedMatches, setClosedMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedBets, setSelectedBets] = useState([]);
+  const [activeTab, setActiveTab] = useState('available');
   const { user, updateUser } = useAuth();
 
   useEffect(() => {
@@ -18,8 +20,12 @@ function Home() {
   const loadMatches = async () => {
     try {
       setLoading(true);
-      const response = await matchesApi.getOpen();
-      setMatches(response || []);
+      const [open, closed] = await Promise.all([
+        matchesApi.getOpen(),
+        matchesApi.getClosed()
+      ]);
+      setOpenMatches(open || []);
+      setClosedMatches(closed || []);
       setError('');
     } catch (err) {
       setError('Error en carregar els partits');
@@ -120,35 +126,61 @@ function Home() {
     );
   }
 
-  if (matches.length === 0) {
-    return (
-      <div className="card">
-        <div className="card-header">Apostes disponibles</div>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          No hi ha partits disponibles per apostar en aquest moment.
-        </p>
-      </div>
-    );
-  }
+  const currentMatches = activeTab === 'available' ? openMatches : closedMatches;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
       <div>
+        {/* Pestanyes */}
+        <div className="tabs-container" style={{ marginBottom: '1.5rem' }}>
+          <button
+            onClick={() => setActiveTab('available')}
+            className={`tab-button ${activeTab === 'available' ? 'active' : ''}`}
+          >
+            Apostes disponibles
+            <span className="tab-count">{openMatches.length}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`tab-button ${activeTab === 'pending' ? 'active' : ''}`}
+          >
+            Apostes pendents
+            <span className="tab-count">{closedMatches.length}</span>
+          </button>
+        </div>
+
+        {/* Descripció */}
         <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <div className="card-header">Apostes disponibles</div>
+          <div className="card-header">
+            {activeTab === 'available' ? 'Apostes disponibles' : 'Apostes pendents de resolució'}
+          </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Apostes obertes fins divendres 20:59. Resolució dimarts nit.
+            {activeTab === 'available'
+              ? 'Apostes obertes fins divendres 20:59. Resolució dimarts nit.'
+              : 'Partits tancats pendents de resolució per part de l\'administrador.'}
           </p>
         </div>
 
-        {matches.map(match => (
-          <MatchCard
-            key={match.id}
-            match={match}
-            onSelectBet={handleSelectBet}
-            selectedBets={selectedBets}
-          />
-        ))}
+        {/* Partits */}
+        {currentMatches.length === 0 ? (
+          <div className="card">
+            <p style={{ color: 'var(--text-secondary)' }}>
+              {activeTab === 'available'
+                ? 'No hi ha partits disponibles per apostar en aquest moment.'
+                : 'No hi ha partits pendents de resolució.'}
+            </p>
+          </div>
+        ) : (
+          currentMatches.map(match => (
+            <MatchCard
+              key={match.id}
+              match={match}
+              onSelectBet={handleSelectBet}
+              selectedBets={selectedBets}
+              disabled={activeTab === 'pending'}
+            />
+          ))
+        )}
       </div>
 
       <div style={{ position: 'sticky', top: '1rem', height: 'fit-content' }}>

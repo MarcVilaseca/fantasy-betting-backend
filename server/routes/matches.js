@@ -6,6 +6,24 @@ import { getAllTeams } from '../data/teams.js';
 
 const router = express.Router();
 
+// Funció per actualitzar l'estat dels partits que hagin passat el deadline
+async function updateMatchesStatus() {
+  try {
+    const allMatches = await matchQueries.getAll();
+    const now = new Date();
+
+    for (const match of allMatches) {
+      // Si el partit està 'open' i el deadline ha passat, canviar-lo a 'closed'
+      if (match.status === 'open' && new Date(match.betting_closes_at) <= now) {
+        await matchQueries.updateStatus('closed', match.id);
+        console.log(`Partit ${match.id} (${match.team1} vs ${match.team2}) canviat a 'closed'`);
+      }
+    }
+  } catch (error) {
+    console.error('Error en actualitzar estat dels partits:', error);
+  }
+}
+
 // GET /api/matches/teams - Obtenir llista d'equips disponibles
 router.get('/teams', (req, res) => {
   try {
@@ -31,6 +49,9 @@ router.get('/', async (req, res) => {
 // GET /api/matches/open - Obtenir partits oberts per apostar
 router.get('/open', async (req, res) => {
   try {
+    // Primer, actualitzar l'estat dels partits que hagin passat el deadline
+    await updateMatchesStatus();
+
     const matches = await matchQueries.getOpen();
 
     // Afegir opcions d'aposta per cada partit
@@ -42,6 +63,27 @@ router.get('/open', async (req, res) => {
     res.json(matchesWithOdds);
   } catch (error) {
     console.error('Error en obtenir partits oberts:', error);
+    res.status(500).json({ error: 'Error en obtenir partits' });
+  }
+});
+
+// GET /api/matches/closed - Obtenir partits tancats però no resolts
+router.get('/closed', async (req, res) => {
+  try {
+    // Primer, actualitzar l'estat dels partits que hagin passat el deadline
+    await updateMatchesStatus();
+
+    const matches = await matchQueries.getClosed();
+
+    // Afegir opcions d'aposta per cada partit (encara que no es podran usar)
+    const matchesWithOdds = matches.map(match => ({
+      ...match,
+      betOptions: generateBetOptions(match.team1, match.team2)
+    }));
+
+    res.json(matchesWithOdds);
+  } catch (error) {
+    console.error('Error en obtenir partits tancats:', error);
     res.status(500).json({ error: 'Error en obtenir partits' });
   }
 });

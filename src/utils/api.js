@@ -109,6 +109,15 @@ export const matches = {
             return [];
         }
     },
+    getClosed: async () => {
+        try {
+            const response = await api.get('/matches/closed');
+            return response.data;
+        } catch (error) {
+            console.error("Error closed matches:", error);
+            return [];
+        }
+    },
     create: async (data) => {
         const response = await api.post('/matches', data);
         return response.data;

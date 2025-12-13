@@ -64,6 +64,7 @@ export const matchQueries = {
   create: async (t1, t2, r, b) => { const res = await query('INSERT INTO matches (team1, team2, round, betting_closes_at) VALUES ($1, $2, $3, $4) RETURNING id', [t1, t2, r, b]); return { lastInsertRowid: res.rows[0].id }; },
   findById: async (id) => get('SELECT * FROM matches WHERE id = $1', [id]),
   getOpen: async () => all("SELECT * FROM matches WHERE status = 'open' AND betting_closes_at > NOW() ORDER BY betting_closes_at ASC"),
+  getClosed: async () => all("SELECT * FROM matches WHERE status = 'closed' ORDER BY betting_closes_at DESC"),
   getAll: async () => all('SELECT * FROM matches ORDER BY created_at DESC'),
   updateStatus: async (s, id) => { const r = await query('UPDATE matches SET status = $1 WHERE id = $2', [s, id]); return { changes: r.rowCount }; },
   setResult: async (s1, s2, id) => { const r = await query("UPDATE matches SET score_team1 = $1, score_team2 = $2, status = 'finished', result_date = CURRENT_TIMESTAMP WHERE id = $3", [s1, s2, id]); return { changes: r.rowCount }; },
