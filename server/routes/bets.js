@@ -5,19 +5,7 @@ import { calculateParlayOdds } from '../utils/oddsCalculator.js';
 
 const router = express.Router();
 
-// Funció per verificar si encara es pot apostar (bloqueig temporal)
-function isBettingAllowed() {
-  // Horari de Barcelona (Europe/Madrid = UTC+1 en hivern, UTC+2 en estiu)
-  const now = new Date();
-  const lockoutTime = new Date('2025-12-12T20:59:00+01:00'); // Hora de Barcelona
-
-  console.log('🕐 Comprovant bloqueig d\'apostes:');
-  console.log('  - Ara:', now.toLocaleString('ca-ES', { timeZone: 'Europe/Madrid' }));
-  console.log('  - Bloqueig:', lockoutTime.toLocaleString('ca-ES', { timeZone: 'Europe/Madrid' }));
-  console.log('  - Es pot apostar?', now < lockoutTime);
-
-  return now < lockoutTime;
-}
+// NOTA: La verificació del termini es fa per partit individual més endavant
 
 // GET /api/bets/public - Obtenir totes les apostes públiques (simples i combinades)
 router.get('/public', authenticateToken, async (req, res) => {
@@ -40,6 +28,30 @@ router.get('/public', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error en obtenir apostes públiques:', error);
     res.status(500).json({ error: 'Error en obtenir apostes públiques' });
+  }
+});
+
+// GET /api/bets/public/history - Obtenir apostes públiques resoltes (històric)
+router.get('/public/history', authenticateToken, async (req, res) => {
+  try {
+    const bets = await betQueries.getResolvedPublic();
+    const parlays = await parlayQueries.getResolvedPublic();
+
+    // Per cada combinada, obtenir els items
+    const parlaysWithItems = await Promise.all(
+      parlays.map(async parlay => ({
+        ...parlay,
+        bets: await parlayQueries.getItems(parlay.id)
+      }))
+    );
+
+    res.json({
+      bets: bets,
+      parlays: parlaysWithItems
+    });
+  } catch (error) {
+    console.error('Error en obtenir històric d\'apostes:', error);
+    res.status(500).json({ error: 'Error en obtenir històric d\'apostes' });
   }
 });
 
@@ -77,11 +89,6 @@ router.get('/my-parlays', authenticateToken, async (req, res) => {
 // POST /api/bets - Crear nova aposta simple
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    // Verificar bloqueig temporal
-    if (!isBettingAllowed()) {
-      return res.status(403).json({ error: 'El termini per apostar ha finalitzat (bloqueig 20:59 12/12/2025)' });
-    }
-
     const { match_id, bet_type, selection, amount, odds } = req.body;
 
     // Validacions
@@ -162,11 +169,6 @@ router.post('/', authenticateToken, async (req, res) => {
 // POST /api/bets/parlay - Crear aposta combinada
 router.post('/parlay', authenticateToken, async (req, res) => {
   try {
-    // Verificar bloqueig temporal
-    if (!isBettingAllowed()) {
-      return res.status(403).json({ error: 'El termini per apostar ha finalitzat (bloqueig 20:59 12/12/2025)' });
-    }
-
     const { bets: betSelections, amount } = req.body;
 
     // Validacions
@@ -269,11 +271,6 @@ router.post('/parlay', authenticateToken, async (req, res) => {
 // POST /api/bets/:id/cancel - Cancel·lar aposta simple (compatible amb frontend)
 router.post('/:id/cancel', authenticateToken, async (req, res) => {
   try {
-    // Verificar si encara es pot apostar (abans del bloqueig)
-    if (!isBettingAllowed()) {
-      return res.status(403).json({ error: 'El termini per cancel·lar apostes ha finalitzat' });
-    }
-
     const bet = await betQueries.findById(req.params.id);
 
     if (!bet) {
@@ -355,11 +352,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // DELETE /api/bets/:id - Cancel·lar aposta i retornar punts
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    // Verificar si encara es pot apostar (abans del bloqueig)
-    if (!isBettingAllowed()) {
-      return res.status(403).json({ error: 'El termini per cancel·lar apostes ha finalitzat' });
-    }
-
     const bet = await betQueries.findById(req.params.id);
 
     if (!bet) {
@@ -411,11 +403,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 // POST /api/bets/parlay/:id/cancel - Cancel·lar aposta combinada (compatible amb frontend)
 router.post('/parlay/:id/cancel', authenticateToken, async (req, res) => {
   try {
-    // Verificar si encara es pot apostar (abans del bloqueig)
-    if (!isBettingAllowed()) {
-      return res.status(403).json({ error: 'El termini per cancel·lar apostes ha finalitzat' });
-    }
-
     const parlay = await parlayQueries.findById(req.params.id);
 
     if (!parlay) {
@@ -477,11 +464,6 @@ router.post('/parlay/:id/cancel', authenticateToken, async (req, res) => {
 // DELETE /api/bets/parlay/:id - Cancel·lar aposta combinada i retornar punts
 router.delete('/parlay/:id', authenticateToken, async (req, res) => {
   try {
-    // Verificar si encara es pot apostar (abans del bloqueig)
-    if (!isBettingAllowed()) {
-      return res.status(403).json({ error: 'El termini per cancel·lar apostes ha finalitzat' });
-    }
-
     const parlay = await parlayQueries.findById(req.params.id);
 
     if (!parlay) {

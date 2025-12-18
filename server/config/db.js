@@ -79,6 +79,7 @@ export const betQueries = {
   updateStatus: async (s, r, id) => { const res = await query('UPDATE bets SET status = $1, result = $2 WHERE id = $3', [s, r, id]); return { changes: res.rowCount }; },
   getPending: async () => all("SELECT * FROM bets WHERE status = 'pending'"),
   getAllPublic: async () => all("SELECT b.*, u.username, m.team1, m.team2, m.round, m.status as match_status FROM bets b JOIN users u ON b.user_id = u.id JOIN matches m ON b.match_id = m.id WHERE b.status = 'pending' AND b.amount > 0 ORDER BY b.created_at DESC"),
+  getResolvedPublic: async () => all("SELECT b.*, u.username, m.team1, m.team2, m.round, m.status as match_status FROM bets b JOIN users u ON b.user_id = u.id JOIN matches m ON b.match_id = m.id WHERE b.status IN ('won', 'lost') AND b.amount > 0 ORDER BY b.created_at DESC"),
   delete: async (id) => { const r = await query('DELETE FROM bets WHERE id = $1', [id]); return { changes: r.rowCount }; }
 };
 
@@ -90,7 +91,9 @@ export const parlayQueries = {
   findById: async (id) => get('SELECT * FROM parlay_bets WHERE id = $1', [id]),
   updateStatus: async (s, r, id) => { const res = await query('UPDATE parlay_bets SET status = $1, result = $2 WHERE id = $3', [s, r, id]); return { changes: res.rowCount }; },
   delete: async (id) => { const r = await query('DELETE FROM parlay_bets WHERE id = $1', [id]); return { changes: r.rowCount }; },
-  getAllPublic: async () => all("SELECT pb.*, u.username FROM parlay_bets pb JOIN users u ON pb.user_id = u.id WHERE pb.status = 'pending' ORDER BY pb.created_at DESC")
+  getAllPublic: async () => all("SELECT pb.*, u.username FROM parlay_bets pb JOIN users u ON pb.user_id = u.id WHERE pb.status = 'pending' ORDER BY pb.created_at DESC"),
+  getAllPending: async () => all("SELECT * FROM parlay_bets WHERE status = 'pending'"),
+  getResolvedPublic: async () => all("SELECT pb.*, u.username FROM parlay_bets pb JOIN users u ON pb.user_id = u.id WHERE pb.status IN ('won', 'lost') ORDER BY pb.created_at DESC")
 };
 
 export const transactionQueries = {

@@ -40,6 +40,15 @@ export const bets = {
             return [];
         }
     },
+    getPublicHistory: async () => {
+        try {
+            const response = await api.get('/bets/public/history');
+            return response.data;
+        } catch (error) {
+            console.error("Error public history:", error);
+            return { bets: [], parlays: [] };
+        }
+    },
     getMyBets: async () => {
         try {
             const response = await api.get('/bets/my');
@@ -135,10 +144,12 @@ export const matches = {
             return [];
         }
     },
-    setResult: async (matchId, scoreTeam1, scoreTeam2) => {
+    setResult: async (matchId, scoreTeam1, scoreTeam2, captainScoreTeam1, captainScoreTeam2) => {
         const response = await api.put(`/matches/${matchId}/result`, {
             score_team1: scoreTeam1,
-            score_team2: scoreTeam2
+            score_team2: scoreTeam2,
+            captain_score_team1: captainScoreTeam1,
+            captain_score_team2: captainScoreTeam2
         });
         return response.data;
     }

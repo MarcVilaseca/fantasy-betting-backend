@@ -5,12 +5,15 @@ import './PublicBets.css';
 function PublicBets() {
   const [bets, setBets] = useState([]);
   const [parlays, setParlays] = useState([]);
+  const [historyBets, setHistoryBets] = useState([]);
+  const [historyParlays, setHistoryParlays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('simple');
 
   useEffect(() => {
     fetchPublicBets();
+    fetchPublicHistory();
   }, []);
 
   const fetchPublicBets = async () => {
@@ -28,6 +31,20 @@ function PublicBets() {
     }
   };
 
+  const fetchPublicHistory = async () => {
+    try {
+      console.log('📜 Carregant històric...');
+      const response = await betsApi.getPublicHistory();
+      console.log('📜 Històric rebut:', response);
+      console.log('  - Apostes simples:', response.bets?.length || 0);
+      console.log('  - Combinades:', response.parlays?.length || 0);
+      setHistoryBets(response.bets || []);
+      setHistoryParlays(response.parlays || []);
+    } catch (err) {
+      console.error('❌ Error carregant històric:', err);
+    }
+  };
+
   const getBetTypeLabel = (betType) => {
     switch (betType) {
       case 'winner': return 'Guanyador';
@@ -35,6 +52,15 @@ function PublicBets() {
       case 'captain': return 'Capità 7+';
       default: return betType;
     }
+  };
+
+  const getStatusBadge = (status) => {
+    if (status === 'won') {
+      return <span className="status-badge won">✅ Guanyada</span>;
+    } else if (status === 'lost') {
+      return <span className="status-badge lost">❌ Perduda</span>;
+    }
+    return null;
   };
 
   if (loading) {
@@ -79,6 +105,13 @@ function PublicBets() {
         >
           Combinades
           <span className="tab-count">{parlays.length}</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
+        >
+          Històric
+          <span className="tab-count">{historyBets.length + historyParlays.length}</span>
         </button>
       </div>
 
@@ -186,6 +219,125 @@ function PublicBets() {
                 </tbody>
               </table>
             </div>
+          )}
+        </>
+      )}
+
+      {/* Històric */}
+      {activeTab === 'history' && (
+        <>
+          {historyBets.length === 0 && historyParlays.length === 0 ? (
+            <div className="no-bets">
+              <p>Encara no hi ha apostes resoltes</p>
+            </div>
+          ) : (
+            <>
+              {/* Apostes simples resoltes */}
+              {historyBets.length > 0 && (
+                <div style={{ marginBottom: '2rem' }}>
+                  <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Apostes Simples Resoltes</h2>
+                  <div className="bets-table-container">
+                    <table className="bets-table">
+                      <thead>
+                        <tr>
+                          <th>Estat</th>
+                          <th>Club</th>
+                          <th>Partit</th>
+                          <th>Ronda</th>
+                          <th>Tipus</th>
+                          <th>Selecció</th>
+                          <th>Quota</th>
+                          <th>Import</th>
+                          <th>Retorn</th>
+                          <th>Data</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {historyBets.map((bet) => (
+                          <tr key={bet.id} className={`bet-row ${bet.status}`}>
+                            <td>{getStatusBadge(bet.status)}</td>
+                            <td className="username-cell">{bet.username}</td>
+                            <td className="match-cell">
+                              {bet.team1} vs {bet.team2}
+                            </td>
+                            <td>{bet.round}</td>
+                            <td>{getBetTypeLabel(bet.bet_type)}</td>
+                            <td className="selection-cell">{bet.selection}</td>
+                            <td className="odds-cell">{bet.odds}</td>
+                            <td className="amount-cell">{bet.amount} 💰</td>
+                            <td className="return-cell">
+                              {bet.status === 'won' ? `${bet.potential_return} 💰` : '0 💰'}
+                            </td>
+                            <td className="date-cell">
+                              {new Date(bet.created_at).toLocaleDateString('ca-ES', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Combinades resoltes */}
+              {historyParlays.length > 0 && (
+                <div>
+                  <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Apostes Combinades Resoltes</h2>
+                  <div className="bets-table-container">
+                    <table className="bets-table">
+                      <thead>
+                        <tr>
+                          <th>Estat</th>
+                          <th>Club</th>
+                          <th>Apostes</th>
+                          <th>Quota Total</th>
+                          <th>Import</th>
+                          <th>Retorn</th>
+                          <th>Data</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {historyParlays.map((parlay) => (
+                          <tr key={parlay.id} className={`bet-row ${parlay.status}`}>
+                            <td>{getStatusBadge(parlay.status)}</td>
+                            <td className="username-cell">{parlay.username}</td>
+                            <td className="selection-cell">
+                              <div style={{ fontSize: '0.875rem' }}>
+                                {parlay.bets.map((bet, idx) => (
+                                  <div key={idx} style={{ marginBottom: '0.25rem' }}>
+                                    <strong>{bet.team1} vs {bet.team2}</strong>: {bet.selection} @ {bet.odds}
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="odds-cell">{parlay.total_odds}</td>
+                            <td className="amount-cell">{parlay.amount} 💰</td>
+                            <td className="return-cell">
+                              {parlay.status === 'won' ? `${parlay.potential_return} 💰` : '0 💰'}
+                            </td>
+                            <td className="date-cell">
+                              {new Date(parlay.created_at).toLocaleDateString('ca-ES', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

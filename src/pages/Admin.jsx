@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { matches as matchesApi, users as usersApi } from '../utils/api';
 
 function Admin() {
@@ -61,21 +61,35 @@ function Admin() {
 
   const handleSetResult = async (matchId) => {
     const match = matches.find(m => m.id === matchId);
-    const score1 = prompt(`PuntuaciÃ³ de ${match.team1}:`);
-    const score2 = prompt(`PuntuaciÃ³ de ${match.team2}:`);
 
-    if (score1 === null || score2 === null) return;
+    // Demanar punts de l'equip 1
+    const score1 = prompt(`Punts de ${match.team1}:`);
+    if (score1 === null) return;
+
+    // Demanar punts del capità de l'equip 1
+    const captainScore1 = prompt(`Punts del capità de ${match.team1}:`);
+    if (captainScore1 === null) return;
+
+    // Demanar punts de l'equip 2
+    const score2 = prompt(`Punts de ${match.team2}:`);
+    if (score2 === null) return;
+
+    // Demanar punts del capità de l'equip 2
+    const captainScore2 = prompt(`Punts del capità de ${match.team2}:`);
+    if (captainScore2 === null) return;
 
     const s1 = parseInt(score1);
+    const c1 = parseInt(captainScore1);
     const s2 = parseInt(score2);
+    const c2 = parseInt(captainScore2);
 
-    if (isNaN(s1) || isNaN(s2)) {
-      alert('Puntuacions invÃ lides');
+    if (isNaN(s1) || isNaN(c1) || isNaN(s2) || isNaN(c2)) {
+      alert('Puntuacions invàlides');
       return;
     }
 
     try {
-      await matchesApi.setResult(matchId, s1, s2);
+      await matchesApi.setResult(matchId, s1, s2, c1, c2);
       alert('Resultat establert i apostes resoltes!');
       loadData();
     } catch (err) {
@@ -92,7 +106,7 @@ function Admin() {
 
     const coins = parseFloat(newCoins);
     if (isNaN(coins) || coins < 0) {
-      alert('Quantitat invÃ lida');
+      alert('Quantitat invàlida');
       return;
     }
 
@@ -139,7 +153,7 @@ function Admin() {
   return (
     <div>
       <div className="card">
-        <div className="card-header">Panell d'AdministraciÃ³</div>
+        <div className="card-header">Panell d'Administració</div>
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--border)' }}>
@@ -173,7 +187,7 @@ function Admin() {
           </button>
         </div>
 
-        {/* GestiÃ³ de partits */}
+        {/* Gestió de partits */}
         {activeTab === 'matches' && (
           <div>
             {/* Crear nou partit */}
@@ -308,7 +322,7 @@ function Admin() {
           </div>
         )}
 
-        {/* GestiÃ³ d'usuaris */}
+        {/* Gestió d'usuaris */}
         {activeTab === 'users' && (
           <div>
             <h3 style={{ marginBottom: '1rem' }}>Usuaris</h3>
@@ -357,4 +371,3 @@ function Admin() {
 }
 
 export default Admin;
-
