@@ -13,8 +13,29 @@ function Admin() {
     team1: '',
     team2: '',
     round: '',
-    betting_closes_at: ''
+    betting_closes_at: '',
+    isCopa: false,
+    copaPosition: ''
   });
+
+  // Opcions de Copa del Rei
+  const copaOptions = [
+    { value: 'edition2|round16|left-1', label: 'Copa del Rei - Ed.2 - Vuitens 1 (Esq)' },
+    { value: 'edition2|round16|left-2', label: 'Copa del Rei - Ed.2 - Vuitens 2 (Esq)' },
+    { value: 'edition2|round16|left-3', label: 'Copa del Rei - Ed.2 - Vuitens 3 (Esq)' },
+    { value: 'edition2|round16|right-1', label: 'Copa del Rei - Ed.2 - Vuitens 4 (Dreta)' },
+    { value: 'edition2|round16|right-2', label: 'Copa del Rei - Ed.2 - Vuitens 5 (Dreta)' },
+    { value: 'edition2|round16|right-3', label: 'Copa del Rei - Ed.2 - Vuitens 6 (Dreta)' },
+    { value: 'edition2|round16|exempt-left', label: 'Copa del Rei - Ed.2 - Exempt 1 (Esq)' },
+    { value: 'edition2|round16|exempt-right', label: 'Copa del Rei - Ed.2 - Exempt 2 (Dreta)' },
+    { value: 'edition2|quarters|left-1', label: 'Copa del Rei - Ed.2 - Quarts 1 (Esq)' },
+    { value: 'edition2|quarters|left-2', label: 'Copa del Rei - Ed.2 - Quarts 2 (Esq)' },
+    { value: 'edition2|quarters|right-1', label: 'Copa del Rei - Ed.2 - Quarts 3 (Dreta)' },
+    { value: 'edition2|quarters|right-2', label: 'Copa del Rei - Ed.2 - Quarts 4 (Dreta)' },
+    { value: 'edition2|semis|left', label: 'Copa del Rei - Ed.2 - Semifinal (Esq)' },
+    { value: 'edition2|semis|right', label: 'Copa del Rei - Ed.2 - Semifinal (Dreta)' },
+    { value: 'edition2|final|final', label: 'Copa del Rei - Ed.2 - Final' }
+  ];
 
   useEffect(() => {
     loadData();
@@ -50,9 +71,32 @@ function Admin() {
   const handleCreateMatch = async (e) => {
     e.preventDefault();
     try {
-      await matchesApi.create(newMatch);
+      const matchData = { ...newMatch };
+
+      // Si és Copa del Rei, processar la posició
+      if (matchData.isCopa && matchData.copaPosition) {
+        const [edition, round, position] = matchData.copaPosition.split('|');
+        matchData.copa_edition = edition;
+        matchData.copa_round = round;
+        matchData.copa_position = position;
+
+        // Establir round automàticament
+        const roundNames = {
+          'round16': 'Copa del Rei - Vuitens',
+          'quarters': 'Copa del Rei - Quarts',
+          'semis': 'Copa del Rei - Semifinals',
+          'final': 'Copa del Rei - Final'
+        };
+        matchData.round = roundNames[round] || 'Copa del Rei';
+      }
+
+      // Eliminar camps temporals
+      delete matchData.isCopa;
+      delete matchData.copaPosition;
+
+      await matchesApi.create(matchData);
       alert('Partit creat correctament!');
-      setNewMatch({ team1: '', team2: '', round: '', betting_closes_at: '' });
+      setNewMatch({ team1: '', team2: '', round: '', betting_closes_at: '', isCopa: false, copaPosition: '' });
       loadData();
     } catch (err) {
       alert(err.response?.data?.error || 'Error en crear partit');
@@ -94,6 +138,41 @@ function Admin() {
       loadData();
     } catch (err) {
       alert(err.response?.data?.error || 'Error en establir resultat');
+    }
+  };
+
+  const handleEditMatch = async (matchId) => {
+    const match = matches.find(m => m.id === matchId);
+
+    // Convertir la data actual a format datetime-local
+    const currentDate = new Date(match.betting_closes_at);
+    const localDate = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+    const newDate = prompt(`Nova data de tancament per ${match.team1} vs ${match.team2}:`, localDate);
+
+    if (!newDate) return;
+
+    try {
+      await matchesApi.update(matchId, { betting_closes_at: newDate });
+      alert('Partit actualitzat correctament!');
+      loadData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error en actualitzar partit');
+    }
+  };
+
+  const handleDeleteMatch = async (matchId) => {
+    const match = matches.find(m => m.id === matchId);
+    const confirmDelete = confirm(`Segur que vols eliminar el partit ${match.team1} vs ${match.team2}?`);
+
+    if (!confirmDelete) return;
+
+    try {
+      await matchesApi.delete(matchId);
+      alert('Partit eliminat correctament!');
+      loadData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error en eliminar partit');
     }
   };
 
@@ -229,18 +308,48 @@ function Admin() {
                     </select>
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Ronda</label>
+                {/* Checkbox Copa del Rei */}
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                     <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Ex: Vuitens de final"
-                      value={newMatch.round}
-                      onChange={(e) => setNewMatch({ ...newMatch, round: e.target.value })}
-                      required
+                      type="checkbox"
+                      checked={newMatch.isCopa}
+                      onChange={(e) => setNewMatch({ ...newMatch, isCopa: e.target.checked, copaPosition: '', round: '' })}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                     />
-                  </div>
+                    <span style={{ fontWeight: 600, color: 'var(--primary)' }}>És partit de Copa del Rei?</span>
+                  </label>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  {newMatch.isCopa ? (
+                    <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
+                      <label className="form-label">Posició al bracket</label>
+                      <select
+                        className="form-input"
+                        value={newMatch.copaPosition}
+                        onChange={(e) => setNewMatch({ ...newMatch, copaPosition: e.target.value })}
+                        required
+                      >
+                        <option value="">Selecciona la posició...</option>
+                        {copaOptions.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Ronda</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Ex: Vuitens de final"
+                        value={newMatch.round}
+                        onChange={(e) => setNewMatch({ ...newMatch, round: e.target.value })}
+                        required
+                      />
+                    </div>
+                  )}
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Tancament apostes</label>
                     <input
@@ -302,18 +411,45 @@ function Admin() {
                   </div>
                 </div>
 
-                {match.status !== 'finished' && (
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                  {match.status !== 'finished' && (
+                    <>
+                      <button
+                        onClick={() => handleSetResult(match.id)}
+                        className="btn btn-primary"
+                        style={{ flex: 1 }}
+                      >
+                        Establir resultat
+                      </button>
+                      <button
+                        onClick={() => handleEditMatch(match.id)}
+                        className="btn"
+                        style={{
+                          minWidth: '80px',
+                          background: 'var(--warning, #ffc107)',
+                          color: '#000'
+                        }}
+                      >
+                        Editar
+                      </button>
+                    </>
+                  )}
                   <button
-                    onClick={() => handleSetResult(match.id)}
-                    className="btn btn-primary"
-                    style={{ width: '100%' }}
+                    onClick={() => handleDeleteMatch(match.id)}
+                    className="btn"
+                    style={{
+                      flex: match.status === 'finished' ? 1 : 0,
+                      minWidth: match.status === 'finished' ? 'auto' : '100px',
+                      background: 'var(--danger, #dc3545)',
+                      color: 'white'
+                    }}
                   >
-                    Establir resultat
+                    {match.status === 'finished' ? 'Eliminar partit' : 'Eliminar'}
                   </button>
-                )}
+                </div>
 
                 {match.status === 'finished' && match.result_date && (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: '0.5rem' }}>
                     Resolt el {formatDate(match.result_date)}
                   </div>
                 )}

@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './CopaDelRei.css';
+import { copa } from '../utils/api';
 
 function CopaDelRei() {
   const [activeEdition, setActiveEdition] = useState('edition1');
-
-  const brackets = {
+  const [loading, setLoading] = useState(false);
+  const fetchedEditions = useRef(new Set());
+  const [brackets, setBrackets] = useState({
     edition1: {
       // Vuitens de final (Round of 16)
       round16: {
@@ -79,7 +81,33 @@ function CopaDelRei() {
         winner: null
       }
     }
-  };
+  });
+
+  // Carregar bracket de l'edició 2 des de l'API (només una vegada)
+  useEffect(() => {
+    const fetchBracket = async () => {
+      // Només carregar si estem a edition2 i encara no s'ha carregat abans
+      if (activeEdition === 'edition2' && !fetchedEditions.current.has('edition2')) {
+        console.log('[Copa] Carregant bracket Edition 2 des de l\'API...');
+        setLoading(true);
+        fetchedEditions.current.add('edition2'); // Marcar com a carregant ABANS de fer la petició
+
+        try {
+          const bracketData = await copa.getBracket('edition2');
+          console.log('[Copa] Bracket carregat:', bracketData);
+          if (bracketData) {
+            setBrackets(prev => ({ ...prev, edition2: bracketData }));
+          }
+        } catch (error) {
+          console.error('[Copa] Error carregant bracket:', error);
+          fetchedEditions.current.delete('edition2'); // Si falla, permetre reintent
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchBracket();
+  }, [activeEdition]);
 
   const bracket = brackets[activeEdition];
 
@@ -118,8 +146,8 @@ function CopaDelRei() {
           {/* Vuitens esquerra */}
           <div className="round round-16">
             <div className="round-title">Vuitens</div>
-            {bracket.round16.left.map((match) => (
-              <div key={match.id} className="match-box">
+            {bracket.round16.left.map((match, index) => (
+              <div key={match.id || `r16-left-${index}`} className="match-box">
                 <div className={`team ${getTeamClass(match.team1, match.winner)}`}>
                   <span className="team-name">{match.team1}</span>
                   <span className="team-score">{match.score1 ?? '-'}</span>
@@ -140,8 +168,8 @@ function CopaDelRei() {
           {/* Quarts esquerra */}
           <div className="round round-quarters">
             <div className="round-title">Quarts</div>
-            {bracket.quarters.left.map((match) => (
-              <div key={match.id} className="match-box">
+            {bracket.quarters.left.map((match, index) => (
+              <div key={match.id || `q-left-${index}`} className="match-box">
                 <div className={`team ${getTeamClass(match.team1, match.winner)}`}>
                   <span className="team-name">{match.team1}</span>
                   <span className="team-score">{match.score1 ?? '-'}</span>
@@ -198,13 +226,8 @@ function CopaDelRei() {
           {/* Vuitens dreta */}
           <div className="round round-16">
             <div className="round-title">Vuitens</div>
-            {/* Equip exempt 2 */}
-            <div className="match-box exempt">
-              <div className="team exempt-team">{bracket.round16.exempt[1]}</div>
-              <div className="exempt-label">Exempt</div>
-            </div>
-            {bracket.round16.right.map((match) => (
-              <div key={match.id} className="match-box">
+            {bracket.round16.right.map((match, index) => (
+              <div key={match.id || `r16-right-${index}`} className="match-box">
                 <div className={`team ${getTeamClass(match.team1, match.winner)}`}>
                   <span className="team-name">{match.team1}</span>
                   <span className="team-score">{match.score1 ?? '-'}</span>
@@ -215,13 +238,18 @@ function CopaDelRei() {
                 </div>
               </div>
             ))}
+            {/* Equip exempt 2 */}
+            <div className="match-box exempt">
+              <div className="team exempt-team">{bracket.round16.exempt[1]}</div>
+              <div className="exempt-label">Exempt</div>
+            </div>
           </div>
 
           {/* Quarts dreta */}
           <div className="round round-quarters">
             <div className="round-title">Quarts</div>
-            {bracket.quarters.right.map((match) => (
-              <div key={match.id} className="match-box">
+            {bracket.quarters.right.map((match, index) => (
+              <div key={match.id || `q-right-${index}`} className="match-box">
                 <div className={`team ${getTeamClass(match.team1, match.winner)}`}>
                   <span className="team-name">{match.team1}</span>
                   <span className="team-score">{match.score1 ?? '-'}</span>

@@ -152,6 +152,10 @@ export const matches = {
             captain_score_team2: captainScoreTeam2
         });
         return response.data;
+    },
+    update: async (matchId, data) => {
+        const response = await api.put(`/matches/${matchId}`, data);
+        return response.data;
     }
 };
 
@@ -223,7 +227,20 @@ export const fantasy = {
     }
 };
 
-// 5. AUTH (Per prevenir el proper error)
+// 5. COPA DEL REI
+export const copa = {
+    getBracket: async (edition) => {
+        try {
+            const response = await api.get(`/copa/${edition}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error copa bracket:", error);
+            return null;
+        }
+    }
+};
+
+// 6. AUTH (Per prevenir el proper error)
 export const auth = {
     login: async (credentials) => {
         const response = await api.post('/auth/login', credentials);

@@ -109,7 +109,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/matches - Crear nou partit (només admin)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { team1, team2, round, betting_closes_at } = req.body;
+    const { team1, team2, round, betting_closes_at, copa_edition, copa_round, copa_position } = req.body;
 
     if (!team1 || !team2 || !round || !betting_closes_at) {
       return res.status(400).json({ error: 'Falten camps obligatoris' });
@@ -125,7 +125,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Els equips no poden ser iguals' });
     }
 
-    const result = await matchQueries.create(team1, team2, round, betting_closes_at);
+    const result = await matchQueries.create(team1, team2, round, betting_closes_at, copa_edition, copa_round, copa_position);
     const matchId = result.lastInsertRowid;
 
     const newMatch = await matchQueries.findById(matchId);
@@ -138,6 +138,35 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(409).json({ error: 'Aquest duel ja existeix per aquesta ronda' });
     }
     res.status(500).json({ error: 'Error en crear partit' });
+  }
+});
+
+// PUT /api/matches/:id - Actualitzar detalls del partit (només admin)
+router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { betting_closes_at } = req.body;
+
+    if (!betting_closes_at) {
+      return res.status(400).json({ error: 'Cal proporcionar la nova data de tancament' });
+    }
+
+    const match = await matchQueries.findById(req.params.id);
+    if (!match) {
+      return res.status(404).json({ error: 'Partit no trobat' });
+    }
+
+    if (match.status === 'finished') {
+      return res.status(400).json({ error: 'No es pot editar un partit finalitzat' });
+    }
+
+    // Actualitzar data de tancament
+    await matchQueries.updateBettingCloses(betting_closes_at, req.params.id);
+
+    const updatedMatch = await matchQueries.findById(req.params.id);
+    res.json(updatedMatch);
+  } catch (error) {
+    console.error('Error en actualitzar partit:', error);
+    res.status(500).json({ error: 'Error en actualitzar partit' });
   }
 });
 

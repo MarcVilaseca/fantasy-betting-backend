@@ -75,6 +75,7 @@ export const matchQueries = {
   getClosed: async () => all("SELECT * FROM matches WHERE status = 'closed' ORDER BY betting_closes_at DESC"),
   getAll: async () => all('SELECT * FROM matches ORDER BY created_at DESC'),
   updateStatus: async (s, id) => { const r = await query('UPDATE matches SET status = $1 WHERE id = $2', [s, id]); return { changes: r.rowCount }; },
+  updateBettingCloses: async (b, id) => { const r = await query('UPDATE matches SET betting_closes_at = $1 WHERE id = $2', [b, id]); return { changes: r.rowCount }; },
   setResult: async (s1, s2, id) => { const r = await query("UPDATE matches SET score_team1 = $1, score_team2 = $2, status = 'finished', result_date = CURRENT_TIMESTAMP WHERE id = $3", [s1, s2, id]); return { changes: r.rowCount }; },
   delete: async (id) => { const r = await query('DELETE FROM matches WHERE id = $1', [id]); return { changes: r.rowCount }; },
   getCopaMatches: async (edition) => all('SELECT * FROM matches WHERE copa_edition = $1 ORDER BY copa_round, copa_position', [edition])
