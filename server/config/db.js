@@ -31,7 +31,12 @@ export async function initDatabase() {
     // Nota: Utilitzem cometes dobles normals per evitar problemes
     await query("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username VARCHAR(255) UNIQUE NOT NULL, password TEXT NOT NULL, coins NUMERIC(10,2) DEFAULT 1000, is_admin BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
     
-    await query("CREATE TABLE IF NOT EXISTS matches (id SERIAL PRIMARY KEY, team1 VARCHAR(255) NOT NULL, team2 VARCHAR(255) NOT NULL, round VARCHAR(255) NOT NULL, status VARCHAR(50) DEFAULT 'open', score_team1 INTEGER, score_team2 INTEGER, betting_closes_at TIMESTAMP NOT NULL, result_date TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(team1, team2, round))");
+    await query("CREATE TABLE IF NOT EXISTS matches (id SERIAL PRIMARY KEY, team1 VARCHAR(255) NOT NULL, team2 VARCHAR(255) NOT NULL, round VARCHAR(255) NOT NULL, status VARCHAR(50) DEFAULT 'open', score_team1 INTEGER, score_team2 INTEGER, betting_closes_at TIMESTAMP NOT NULL, result_date TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, copa_edition VARCHAR(50), copa_round VARCHAR(50), copa_position VARCHAR(50), UNIQUE(team1, team2, round))");
+
+    // Afegir columnes Copa del Rei si no existeixen (migració)
+    await query("ALTER TABLE matches ADD COLUMN IF NOT EXISTS copa_edition VARCHAR(50)");
+    await query("ALTER TABLE matches ADD COLUMN IF NOT EXISTS copa_round VARCHAR(50)");
+    await query("ALTER TABLE matches ADD COLUMN IF NOT EXISTS copa_position VARCHAR(50)");
     
     await query("CREATE TABLE IF NOT EXISTS bets (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, match_id INTEGER NOT NULL REFERENCES matches(id) ON DELETE CASCADE, bet_type VARCHAR(50) NOT NULL, selection TEXT NOT NULL, amount NUMERIC(10,2) NOT NULL, odds NUMERIC(10,2) NOT NULL, potential_return NUMERIC(10,2) NOT NULL, status VARCHAR(50) DEFAULT 'pending', result VARCHAR(50), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
     
@@ -61,14 +66,18 @@ export const userQueries = {
 };
 
 export const matchQueries = {
-  create: async (t1, t2, r, b) => { const res = await query('INSERT INTO matches (team1, team2, round, betting_closes_at) VALUES ($1, $2, $3, $4) RETURNING id', [t1, t2, r, b]); return { lastInsertRowid: res.rows[0].id }; },
+  create: async (t1, t2, r, b, copa_ed = null, copa_r = null, copa_p = null) => {
+    const res = await query('INSERT INTO matches (team1, team2, round, betting_closes_at, copa_edition, copa_round, copa_position) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id', [t1, t2, r, b, copa_ed, copa_r, copa_p]);
+    return { lastInsertRowid: res.rows[0].id };
+  },
   findById: async (id) => get('SELECT * FROM matches WHERE id = $1', [id]),
   getOpen: async () => all("SELECT * FROM matches WHERE status = 'open' AND betting_closes_at > NOW() ORDER BY betting_closes_at ASC"),
   getClosed: async () => all("SELECT * FROM matches WHERE status = 'closed' ORDER BY betting_closes_at DESC"),
   getAll: async () => all('SELECT * FROM matches ORDER BY created_at DESC'),
   updateStatus: async (s, id) => { const r = await query('UPDATE matches SET status = $1 WHERE id = $2', [s, id]); return { changes: r.rowCount }; },
   setResult: async (s1, s2, id) => { const r = await query("UPDATE matches SET score_team1 = $1, score_team2 = $2, status = 'finished', result_date = CURRENT_TIMESTAMP WHERE id = $3", [s1, s2, id]); return { changes: r.rowCount }; },
-  delete: async (id) => { const r = await query('DELETE FROM matches WHERE id = $1', [id]); return { changes: r.rowCount }; }
+  delete: async (id) => { const r = await query('DELETE FROM matches WHERE id = $1', [id]); return { changes: r.rowCount }; },
+  getCopaMatches: async (edition) => all('SELECT * FROM matches WHERE copa_edition = $1 ORDER BY copa_round, copa_position', [edition])
 };
 
 export const betQueries = {

@@ -12,6 +12,7 @@ import betRoutes from './routes/bets.js';
 import userRoutes from './routes/users.js';
 import fantasyRoutes from './routes/fantasy.js';
 import adminRoutes from './routes/admin.js';
+import copaRoutes from './routes/copa.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api/bets', betRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/fantasy', fantasyRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/copa', copaRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {

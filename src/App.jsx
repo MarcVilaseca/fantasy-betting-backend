@@ -8,6 +8,7 @@ import MyBets from './pages/MyBets';
 import Leaderboard from './pages/Leaderboard';
 import Admin from './pages/Admin';
 import PublicBets from './pages/PublicBets';
+import CopaDelRei from './pages/CopaDelRei';
 import FantasyClassification from './pages/FantasyClassification';
 
 function PrivateRoute({ children }) {
@@ -68,6 +69,14 @@ function AppRoutes() {
             element={
               <PrivateRoute>
                 <PublicBets />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/copa-del-rei"
+            element={
+              <PrivateRoute>
+                <CopaDelRei />
               </PrivateRoute>
             }
           />

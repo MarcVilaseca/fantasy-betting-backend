@@ -1,0 +1,429 @@
+.copa-del-rei-page {
+  padding: 10px;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.copa-del-rei-page h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.page-description {
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+/* Tabs per a les edicions */
+.editions-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.edition-tab {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.edition-tab:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.edition-tab.active {
+  background: white;
+  color: #667eea;
+  border-color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Contenidor principal del bracket */
+.bracket-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-height: calc(100vh - 140px);
+  height: calc(100vh - 140px);
+  overflow: auto;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Costats del bracket */
+.bracket-side {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  min-width: fit-content;
+}
+
+.bracket-left {
+  justify-content: flex-end;
+}
+
+.bracket-right {
+  justify-content: flex-start;
+  flex-direction: row-reverse;
+}
+
+/* Rondes */
+.round {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  position: relative;
+}
+
+.round-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: #667eea;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  padding: 5px 8px;
+  background: #f0f4ff;
+  border-radius: 10px;
+}
+
+/* Caixes de partits */
+.match-box {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 5px;
+  padding: 2px 5px;
+  min-width: 130px;
+  max-width: 130px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  position: relative;
+}
+
+.match-box:hover {
+  border-color: #667eea;
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+}
+
+.match-box.exempt {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: #adb5bd;
+  min-height: 50px;
+}
+
+.team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 5px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+  gap: 5px;
+}
+
+.team:last-child {
+  border-bottom: none;
+}
+
+.team:hover {
+  background: #f8f9fa;
+}
+
+.team-name {
+  flex: 1;
+  font-weight: 500;
+  color: #2c3e50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-score {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 0.95rem;
+  min-width: 25px;
+  text-align: center;
+  background: #f0f4ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Equip guanyador */
+.team.winner {
+  background: #e8f5e9;
+  font-weight: 700;
+}
+
+.team.winner .team-name {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.team.winner .team-score {
+  background: #4caf50;
+  color: white;
+}
+
+/* Equip perdedor */
+.team.loser {
+  opacity: 0.6;
+}
+
+.team.loser .team-score {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.exempt-team {
+  font-weight: 600;
+  color: #495057;
+  text-align: center;
+  padding: 8px;
+}
+
+.exempt-label {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 0;
+}
+
+/* Centre - Final */
+.bracket-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.round-final {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.final-box {
+  min-width: 140px;
+  max-width: 140px;
+  border-width: 3px;
+  border-color: #ffd700;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+}
+
+.final-box .team {
+  font-size: 0.8rem;
+}
+
+.final-box .team-name {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.final-box .team-score {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.trophy {
+  font-size: 2rem;
+  animation: trophy-pulse 2s ease-in-out infinite;
+  text-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+}
+
+.champion-name {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffd700;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  animation: champion-glow 2s ease-in-out infinite;
+}
+
+@keyframes champion-glow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.8);
+  }
+}
+
+@keyframes trophy-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Spacing per a les rondes */
+.round-16 {
+  gap: 6px;
+}
+
+.round-quarters {
+  gap: 22px;
+}
+
+.round-semis {
+  gap: 50px;
+}
+
+/* Llegenda */
+.legend {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.legend h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.legend ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.legend li {
+  color: #495057;
+  padding: 6px 0;
+  padding-left: 25px;
+  position: relative;
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+
+.legend li:before {
+  content: "⚽";
+  position: absolute;
+  left: 0;
+  top: 6px;
+}
+
+/* Responsive */
+@media (max-width: 1600px) {
+  .bracket-side {
+    gap: 30px;
+  }
+
+  .match-box {
+    min-width: 140px;
+  }
+
+  .team {
+    font-size: 0.8rem;
+  }
+
+  .round-quarters {
+    gap: 30px;
+  }
+
+  .round-semis {
+    gap: 65px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .copa-del-rei-page {
+    padding: 10px;
+  }
+
+  .copa-del-rei-page h1 {
+    font-size: 1.5rem;
+  }
+
+  .bracket-container {
+    padding: 15px;
+    gap: 20px;
+    max-height: calc(100vh - 180px);
+  }
+
+  .bracket-side {
+    gap: 25px;
+  }
+
+  .match-box {
+    min-width: 130px;
+    padding: 3px 6px;
+  }
+
+  .team {
+    padding: 5px 6px;
+    font-size: 0.75rem;
+  }
+
+  .round-title {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .trophy {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .bracket-container {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .bracket-side {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bracket-right {
+    flex-direction: row;
+  }
+}
