@@ -83,7 +83,7 @@ function FantasyClassification() {
                 {classification.map((team, index) => {
                   const position = index + 1;
                   const totalPoints = Math.round(parseFloat(team.total_points));
-                  const average = Math.round(totalPoints / 14);
+                  const average = Math.round(totalPoints / 17);
                   const medal = getMedalEmoji(position);
 
                   return (
@@ -112,7 +112,7 @@ function FantasyClassification() {
             <ul>
               <li>Els punts fantasy són independents de les monedes d'apostes</li>
               <li>Les puntuacions s'afegeixen manualment després de cada jornada</li>
-              <li>La mitjana es calcula dividint els punts totals entre les jornades jugades</li>
+              <li>La mitjana es calcula dividint els punts totals entre 17 jornades</li>
             </ul>
           </div>
         </div>
