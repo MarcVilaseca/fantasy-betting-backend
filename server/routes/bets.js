@@ -66,7 +66,7 @@ router.get('/my', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/bets/my/parlays - Obtenir apostes combinades de l'usuari
+// GET /api/bets/my-parlays - Obtenir apostes combinades de l'usuari
 router.get('/my-parlays', authenticateToken, async (req, res) => {
   try {
     const parlays = await parlayQueries.getByUser(req.user.id);
@@ -287,13 +287,13 @@ router.post('/:id/cancel', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Només es poden cancel·lar apostes pendents' });
     }
 
-    // Verificar que el partit encara està obert
+    // Verificar que el partit no està finalitzat (permetre cancel·lar si està open o closed)
     const match = await matchQueries.findById(bet.match_id);
     if (!match) {
       return res.status(404).json({ error: 'Partit no trobat' });
     }
-    if (match.status !== 'open') {
-      return res.status(400).json({ error: 'No es poden cancel·lar apostes de partits tancats o finalitzats' });
+    if (match.status === 'finished') {
+      return res.status(400).json({ error: 'No es poden cancel·lar apostes de partits finalitzats' });
     }
 
     // Verificar que té una quantitat a retornar (no és part d'una combinada)
@@ -419,15 +419,15 @@ router.post('/parlay/:id/cancel', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Només es poden cancel·lar apostes pendents' });
     }
 
-    // Verificar que tots els partits encara estan oberts
+    // Verificar que cap partit està finalitzat (permetre cancel·lar si estan open o closed)
     const items = await parlayQueries.getItems(req.params.id);
     for (const item of items) {
       const match = await matchQueries.findById(item.match_id);
       if (!match) {
         return res.status(404).json({ error: 'Un dels partits no s\'ha trobat' });
       }
-      if (match.status !== 'open') {
-        return res.status(400).json({ error: 'No es poden cancel·lar apostes amb partits tancats o finalitzats' });
+      if (match.status === 'finished') {
+        return res.status(400).json({ error: 'No es poden cancel·lar apostes amb partits finalitzats' });
       }
     }
 
@@ -482,28 +482,28 @@ router.delete('/parlay/:id', authenticateToken, async (req, res) => {
 
     // Retornar monedes a l'usuari
     const user = await userQueries.findById(req.user.id);
-    const newCoins = user.coins + parlay.amount;
+    const newCoins = Number(user.coins) + Number(parlay.amount);
     await userQueries.updateCoins(newCoins, req.user.id);
 
     // Registrar transacció
     await transactionQueries.create(
       req.user.id,
-      parlay.amount,
-      'parlay_cancelled',
-      `Aposta combinada cancel·lada @ ${parlay.total_odds}`
+      Number(parlay.amount),
+      'bet_cancelled',
+      `Aposta combinada cancel·lada: ${parlay.total_odds}x`
     );
 
     // Eliminar aposta combinada (això eliminarà també els items per CASCADE)
     await parlayQueries.delete(req.params.id);
 
     res.json({
-      message: 'Aposta combinada cancel·lada correctament',
-      refundAmount: parlay.amount,
+      message: 'Aposta cancel·lada correctament',
+      refundAmount: Number(parlay.amount),
       newBalance: newCoins
     });
   } catch (error) {
-    console.error('Error en cancel·lar aposta combinada:', error);
-    res.status(500).json({ error: 'Error en cancel·lar aposta combinada' });
+    console.error('Error en cancel·lar aposta:', error);
+    res.status(500).json({ error: 'Error en cancel·lar aposta' });
   }
 });
 
